@@ -11,11 +11,13 @@ namespace pk3DS.Core.Structures
         public int AreaIndex;
         public string Name { get; private set; }
         public string LocationName { get; private set; }
+        public int Index { get; private set; }
 
         public ZoneData7(byte[] data)
         {
             Data = (byte[])(data ?? new byte[SIZE]).Clone();
         }
+
         public ZoneData7(byte[] data, int index)
         {
             Data = new byte[SIZE];
@@ -27,14 +29,14 @@ namespace pk3DS.Core.Structures
             get => BitConverter.ToInt32(Data, 0x1C);
             set => BitConverter.GetBytes(value).CopyTo(Data, 0x1C);
         }
-        
+
         // Info Tracking
         public void SetZoneName(string[] locationList, int index)
         {
             LocationName = locationList[ParentMap];
             Name = $"{index:000} - {LocationName}";
+            Index = index;
         }
-
 
         public static ZoneData7[] GetArray(byte[] zoneData)
         {
@@ -46,7 +48,7 @@ namespace pk3DS.Core.Structures
 
         public static ZoneData7[] GetZoneData7Array(byte[] zoneData, byte[] worldData, string[] locationList, byte[][] worlds)
         {
-            var zones = ZoneData7.GetArray(zoneData);
+            var zones = GetArray(zoneData);
             for (int i = 0; i < zones.Length; i++)
             {
                 zones[i].WorldIndex = BitConverter.ToUInt16(worldData, i * 0x2);

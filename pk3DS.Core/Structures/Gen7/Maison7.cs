@@ -12,27 +12,28 @@ namespace pk3DS.Core.Structures
             public ushort[] Choices;
 
             public Trainer() { }
+
             public Trainer(byte[] data)
             {
                 Class = BitConverter.ToUInt16(data, 0);
                 Count = BitConverter.ToUInt16(data, 2);
                 Choices = new ushort[Count];
                 for (int i = 0; i < Count; i++)
-                    Choices[i] = BitConverter.ToUInt16(data, 4 + 2 * i);
+                    Choices[i] = BitConverter.ToUInt16(data, 4 + (2 * i));
             }
+
             public byte[] Write()
             {
-                using (var ms = new MemoryStream())
-                using (var bw = new BinaryWriter(ms))
-                {
-                    bw.Write(Class);
-                    bw.Write(Count);
-                    foreach (ushort Choice in Choices)
-                        bw.Write(Choice);
-                    return ms.ToArray();
-                }
+                using var ms = new MemoryStream();
+                using var bw = new BinaryWriter(ms);
+                bw.Write(Class);
+                bw.Write(Count);
+                foreach (ushort Choice in Choices)
+                    bw.Write(Choice);
+                return ms.ToArray();
             }
         }
+
         public class Pokemon
         {
             public ushort Species;
@@ -58,7 +59,7 @@ namespace pk3DS.Core.Structures
             {
                 Species = BitConverter.ToUInt16(data, 0);
                 for (int i = 0; i < 4; i++)
-                    Moves[i] = BitConverter.ToUInt16(data, 2 + 2 * i);
+                    Moves[i] = BitConverter.ToUInt16(data, 2 + (2 * i));
                 EV = data[0xA];
                 for (int i = 0; i < 6; i++)
                     EVs[i] = ((EV >> i) & 1) == 1;
@@ -66,25 +67,24 @@ namespace pk3DS.Core.Structures
                 Item = BitConverter.ToUInt16(data, 0xC);
                 Form = BitConverter.ToUInt16(data, 0xE);
             }
+
             public byte[] Write()
             {
-                using (var ms = new MemoryStream())
-                using (var bw = new BinaryWriter(ms))
-                {
-                    bw.Write(Species);
-                    foreach (ushort Move in Moves)
-                        bw.Write(Move);
+                using var ms = new MemoryStream();
+                using var bw = new BinaryWriter(ms);
+                bw.Write(Species);
+                foreach (ushort Move in Moves)
+                    bw.Write(Move);
 
-                    int ev = EV & 0xC0;
-                    for (int i = 0; i < EVs.Length; i++)
-                        ev |= EVs[i] ? 1 << i : 0;
-                    bw.Write((byte)ev);
+                int ev = EV & 0xC0;
+                for (int i = 0; i < EVs.Length; i++)
+                    ev |= EVs[i] ? 1 << i : 0;
+                bw.Write((byte)ev);
 
-                    bw.Write(Nature);
-                    bw.Write(Item);
-                    bw.Write(Form);
-                    return ms.ToArray();
-                }
+                bw.Write(Nature);
+                bw.Write(Item);
+                bw.Write(Form);
+                return ms.ToArray();
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace pk3DS
+namespace pk3DS.Core
 {
     public class Encounter7
     {
@@ -19,8 +19,10 @@ namespace pk3DS
             var sb = new StringBuilder();
             sb.Append(speciesList[Species]);
             if (Forme != 0)
-                sb.Append($" (Forme {Forme})");
+                sb.Append(" (Forme ").Append(Forme).Append(')');
             return sb.ToString();
         }
+
+        public uint Dump(EncounterTable t) => RawValue | (uint)(t.MinLevel << 16) | (uint)(t.MaxLevel << 24);
     }
 }

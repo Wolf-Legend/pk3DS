@@ -23,17 +23,18 @@ namespace pk3DS.Core.Structures
             if (minLevel <= 1 && maxLevel >= 100)
                 return Moves;
             if (minLevel > maxLevel)
-                return new int[0];
+                return Array.Empty<int>();
             int start = Array.FindIndex(Levels, z => z >= minLevel);
             if (start < 0)
-                return new int[0];
+                return Array.Empty<int>();
             int end = Array.FindLastIndex(Levels, z => z <= maxLevel);
             if (end < 0)
-                return new int[0];
+                return Array.Empty<int>();
             int[] result = new int[end - start + 1];
             Array.Copy(Moves, start, result, 0, result.Length);
             return result;
         }
+
         /// <summary>Returns the moves a Pokémon would have if it were encountered at the specified level.</summary>
         /// <remarks>In Generation 1, it is not possible to learn any moves lower than these encounter moves.</remarks>
         /// <param name="level">The level the Pokémon was encountered at.</param>
@@ -56,6 +57,7 @@ namespace pk3DS.Core.Structures
             }
             return (int[])moves;
         }
+
         /// <summary>Returns the index of the lowest level move if the Pokémon were encountered at the specified level.</summary>
         /// <remarks>Helps determine the minimum level an encounter can be at.</remarks>
         /// <param name="level">The level the Pokémon was encountered at.</param>
@@ -78,38 +80,39 @@ namespace pk3DS.Core.Structures
             return index < 0 ? index : Levels[index];
         }
     }
+
     public class Learnset6 : Learnset
     {
         public Learnset6(byte[] data)
         {
             if (data.Length < 4 || data.Length % 4 != 0)
-            { Count = 0; Levels = new int[0]; Moves = new int[0]; return; }
-            Count = data.Length / 4 - 1;
+            { Count = 0; Levels = Array.Empty<int>(); Moves = Array.Empty<int>(); return; }
+            Count = (data.Length / 4) - 1;
             Moves = new int[Count];
             Levels = new int[Count];
-            using (var ms = new MemoryStream(data))
-            using (var br = new BinaryReader(ms))
+            using var ms = new MemoryStream(data);
+            using var br = new BinaryReader(ms);
             for (int i = 0; i < Count; i++)
             {
                 Moves[i] = br.ReadInt16();
                 Levels[i] = br.ReadInt16();
             }
         }
+
         public override byte[] Write()
         {
             Count = (ushort)Moves.Length;
-            using (MemoryStream ms = new MemoryStream())
-            using (BinaryWriter bw = new BinaryWriter(ms))
+            using MemoryStream ms = new MemoryStream();
+            using BinaryWriter bw = new BinaryWriter(ms);
+            for (int i = 0; i < Count; i++)
             {
-                for (int i = 0; i < Count; i++)
-                {
-                    bw.Write((short)Moves[i]);
-                    bw.Write((short)Levels[i]);
-                }
-                bw.Write(-1);
-                return ms.ToArray();
+                bw.Write((short)Moves[i]);
+                bw.Write((short)Levels[i]);
             }
+            bw.Write(-1);
+            return ms.ToArray();
         }
+
         public static Learnset[] GetArray(byte[][] entries)
         {
             Learnset[] data = new Learnset[entries.Length];

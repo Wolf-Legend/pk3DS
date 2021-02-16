@@ -63,7 +63,7 @@ namespace pk3DS
             string[] CRSs = files.Where(x => new FileInfo(x).Extension.Contains("crs")).ToArray();
             var CRRs = Directory.Exists(Path.Combine(path, ".crr"))
                 ? Directory.EnumerateFiles(Path.Combine(path, ".crr"))
-                : new string[0];
+                : Array.Empty<string>();
             string CRRBAKPATH = Path.Combine(bak_dll, ".crr");
 
             foreach (string src in CROs.Concat(CRSs))
@@ -87,7 +87,7 @@ namespace pk3DS
             var files = config.Files.Select(file => file.Name);
             foreach (var f in files)
             {
-                string GARC = config.getGARCFileName(f);
+                string GARC = config.GetGARCFileName(f);
                 string name =  $"{f} ({GARC.Replace(Path.DirectorySeparatorChar.ToString(), "")})";
 
                 string src = Path.Combine(config.RomFS, GARC);
@@ -128,8 +128,8 @@ namespace pk3DS
             }
         }
 
-        private readonly List<List<RestoreInfo>> Items = new List<List<RestoreInfo>>();
-        private readonly List<CheckedListBox> List = new List<CheckedListBox>();
+        private readonly List<List<RestoreInfo>> Items = new();
+        private readonly List<CheckedListBox> List = new();
 
         private void B_Go_Click(object sender, EventArgs e)
         {
@@ -148,15 +148,15 @@ namespace pk3DS
 
                     try
                     {
-                        if (File.Exists(dest)) // only restore files that exist
-                            File.Copy(dest, src, overwrite: true); count++;
+                        if (File.Exists(src)) // only restore files that exist
+                            File.Copy(src, dest, overwrite: true); count++;
                     }
                     catch { Debug.WriteLine("Unable to overwrite backup: " + dest); }
                 }
             }
 
             WinFormsUtil.Alert($"Restored {count} file(s).", "The program will now close.");
-            Application.Exit(); // do not call closing events that repackage personal/gametext
+            Environment.Exit(-1); // do not call closing events that repackage personal/gametext
         }
 
         private void B_All_Click(object sender, EventArgs e)

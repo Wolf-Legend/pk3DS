@@ -12,6 +12,7 @@ namespace pk3DS.Core.Randomizers
         private readonly MoveRandomizer moverand;
         private readonly GameConfig Config;
         private readonly EggMoves[] Sets;
+
         public EggMoveRandomizer(GameConfig config, EggMoves[] sets)
         {
             Config = config;
@@ -23,13 +24,15 @@ namespace pk3DS.Core.Randomizers
         public int ExpandTo = 18;
         public bool STAB { set => moverand.rSTAB = value; }
         public int[] BannedMoves { set => moverand.BannedMoves = value; }
-        public decimal rSTABPercent { set => moverand.rSTABPercent = value; }
+        public decimal STABPercent { set => moverand.rSTABPercent = value; }
 
         public void Execute()
         {
             if (Sets[0] is EggMoves6)
+            {
                 for (int i = 0; i < Sets.Length; i++)
                     Randomize(Sets[i], i);
+            }
             else if (Sets[0] is EggMoves7)
             {
                 for (int i = 0; i <= Config.MaxSpeciesID; i++)
@@ -38,7 +41,7 @@ namespace pk3DS.Core.Randomizers
                     int formoff = ((EggMoves7) Sets[i]).FormTableIndex;
                     int count = Config.Personal[i].FormeCount;
                     for (int j = 1; j < count; j++)
-                        Randomize(Sets[formoff + j - 1], Config.Personal.getFormeIndex(i, j));
+                        Randomize(Sets[formoff + j - 1], Config.Personal.GetFormIndex(i, j));
                 }
             }
         }

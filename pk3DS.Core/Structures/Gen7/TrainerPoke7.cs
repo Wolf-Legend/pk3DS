@@ -2,28 +2,29 @@
 
 namespace pk3DS.Core.Structures
 {
-    public class trpoke7
+    public class TrainerPoke7
     {
         public const int SIZE = 0x20;
         private readonly byte[] Data;
 
-        public trpoke7(byte[] d = null)
+        public TrainerPoke7(byte[] d = null)
         {
             Data = (byte[])(d ?? new byte[SIZE]).Clone();
             if (Data.Length != 0x20)
                 throw new ArgumentException("Invalid trpoke7!");
         }
 
-        public trpoke7 Clone()
+        public TrainerPoke7 Clone()
         {
-            return new trpoke7(Write());
+            return new(Write());
         }
 
         public int Gender
         {
             get => Data[0] & 0x3;
-            set => Data[0] = (byte)((Data[0] & 0xFC) | value & 0x3);
+            set => Data[0] = (byte)((Data[0] & 0xFC) | (value & 0x3));
         }
+
         public int Ability
         {
             get => (Data[0] >> 4) & 0x3;
@@ -47,7 +48,7 @@ namespace pk3DS.Core.Structures
         public int IV_SPA { get => (int)(IV32 >> 15) & 0x1F; set => IV32 = (uint)((IV32 & ~(0x1F << 15)) | (uint)((value > 31 ? 31 : value) << 15)); }
         public int IV_SPD { get => (int)(IV32 >> 20) & 0x1F; set => IV32 = (uint)((IV32 & ~(0x1F << 20)) | (uint)((value > 31 ? 31 : value) << 20)); }
         public int IV_SPE { get => (int)(IV32 >> 25) & 0x1F; set => IV32 = (uint)((IV32 & ~(0x1F << 25)) | (uint)((value > 31 ? 31 : value) << 25)); }
-        public bool Shiny { get => ((IV32 >> 30) & 1) == 1; set => IV32 = (uint)((IV32 & ~0x40000000) | (uint)(value ? 0x40000000 : 0)); }
+        public bool Shiny { get => ((IV32 >> 30) & 1) == 1; set => IV32 = ((IV32 & ~0x40000000u) | (value ? 0x40000000u : 0)); }
 
         public int Level { get => Data[0xE]; set => Data[0xE] = (byte)value; }
         public int Species { get => BitConverter.ToUInt16(Data, 0x10); set => BitConverter.GetBytes((ushort)value).CopyTo(Data, 0x10); }
@@ -69,6 +70,7 @@ namespace pk3DS.Core.Structures
                 IV_SPA = value[3]; IV_SPD = value[4]; IV_SPE = value[5];
             }
         }
+
         public int[] EVs
         {
             get => new[] { EV_HP, EV_ATK, EV_DEF, EV_SPA, EV_SPD, EV_SPE };
@@ -79,6 +81,7 @@ namespace pk3DS.Core.Structures
                 EV_SPA = value[3]; EV_SPD = value[4]; EV_SPE = value[5];
             }
         }
+
         public int[] Moves
         {
             get => new[] { Move1, Move2, Move3, Move4 };

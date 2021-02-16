@@ -19,20 +19,22 @@ namespace pk3DS
             offset = Util.IndexOfBytes(data, new byte[] { 0x1E, 0x28, 0x32, 0x3C, 0x46, 0x50, 0x5A, 0x5E, 0x62, 0x05, 0x0A, 0x0F, 0x14, 0x19, 0x1E, 0x23, 0x28, 0x2D, 0x32 }, 0x400000, 0) - 0x3A;
             codebin = files[0];
             itemlist[0] = "";
-            setupDGV();
-            getList();
+            SetupDGV();
+            GetList();
         }
 
         private readonly string codebin;
-        private readonly string[] itemlist = Main.Config.getText(TextName.ItemNames);
+        private readonly string[] itemlist = Main.Config.GetText(TextName.ItemNames);
         private readonly int offset = Main.Config.ORAS ? 0x004872FC : 0x004455A8;
         private readonly byte[] data;
         private int dataoffset;
-        private void getDataOffset()
+
+        private void GetDataOffset()
         {
             dataoffset = offset; // reset
         }
-        private void setupDGV()
+
+        private void SetupDGV()
         {
             dgvCommon.Columns.Clear(); dgvRare.Columns.Clear();
             DataGridViewColumn dgvIndex = new DataGridViewTextBoxColumn();
@@ -59,20 +61,20 @@ namespace pk3DS
             dgvRare.Columns.Add((DataGridViewColumn)dgvMove.Clone());
         }
 
-        private List<ushort> common = new List<ushort>();
-        private List<ushort> rare = new List<ushort>();
+        private List<ushort> common = new();
+        private List<ushort> rare = new();
 
-        private void getList()
+        private void GetList()
         {
             common = new List<ushort>();
             rare = new List<ushort>();
             dgvCommon.Rows.Clear();
 
-            getDataOffset();
+            GetDataOffset();
             for (int i = 0; i < 0x12; i++) // 0x12 Common
-                common.Add(BitConverter.ToUInt16(data, dataoffset + 2 * i));
+                common.Add(BitConverter.ToUInt16(data, dataoffset + (2 * i)));
             for (int i = 0x12; i < 0x12 + 0xB; i++) // 0xB Rare
-                rare.Add(BitConverter.ToUInt16(data, dataoffset + 2 * i));
+                rare.Add(BitConverter.ToUInt16(data, dataoffset + (2 * i)));
 
             ushort[] clist = common.ToArray();
             ushort[] rlist = rare.ToArray();
@@ -80,9 +82,9 @@ namespace pk3DS
             { dgvCommon.Rows.Add(); dgvCommon.Rows[i].Cells[0].Value = i.ToString(); dgvCommon.Rows[i].Cells[1].Value = itemlist[clist[i]]; }
             for (int i = 0; i < rlist.Length; i++)
             { dgvRare.Rows.Add(); dgvRare.Rows[i].Cells[0].Value = i.ToString(); dgvRare.Rows[i].Cells[1].Value = itemlist[rlist[i]]; }
-
         }
-        private void setList()
+
+        private void SetList()
         {
             common = new List<ushort>();
             rare = new List<ushort>();
@@ -96,27 +98,29 @@ namespace pk3DS
             ushort[] rlist = rare.ToArray();
 
             for (int i = 0; i < 0x12; i++)
-                Array.Copy(BitConverter.GetBytes(clist[i]), 0, data, offset + 2 * i, 2);
+                Array.Copy(BitConverter.GetBytes(clist[i]), 0, data, offset + (2 * i), 2);
             for (int i = 0x12; i < 0x12 + 0xB; i++)
-                Array.Copy(BitConverter.GetBytes(rlist[i - 0x12]), 0, data, offset + 2 * i, 2);
+                Array.Copy(BitConverter.GetBytes(rlist[i - 0x12]), 0, data, offset + (2 * i), 2);
         }
 
         private void B_Save_Click(object sender, EventArgs e)
         {
-            setList();
+            SetList();
             File.WriteAllBytes(codebin, data);
             Close();
         }
+
         private void B_Cancel_Click(object sender, EventArgs e)
         {
             Close();
         }
+
         private void B_Randomize_Click(object sender, EventArgs e)
         {
             if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Randomize pickup lists?"))
                 return;
 
-            int[] validItems = Randomizer.getRandomItemList();
+            int[] validItems = Randomizer.GetRandomItemList();
 
             int ctr = 0;
             Util.Shuffle(validItems);

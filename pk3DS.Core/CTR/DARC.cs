@@ -16,7 +16,7 @@ namespace pk3DS.Core.CTR
         public DARC(byte[] Data = null)
         {
             if (Data == null) return;
-            using (BinaryReader br = new BinaryReader(new MemoryStream(Data)))
+            using BinaryReader br = new BinaryReader(new MemoryStream(Data));
             try
             {
                 Header = new DARCHeader(br);
@@ -33,7 +33,7 @@ namespace pk3DS.Core.CTR
                     while ((c = (char) br.ReadUInt16()) > 0) s += c;
 
                     FileNameTable[i] = new NameTableEntry(offs, s);
-                    offs += (uint)s.Length * 2 + 2;
+                    offs += ((uint)s.Length * 2) + 2;
                 }
                 br.BaseStream.Position = Header.FileDataOffset;
                 this.Data = br.ReadBytes((int)(Header.FileSize - Header.FileDataOffset));
@@ -57,6 +57,7 @@ namespace pk3DS.Core.CTR
                 FileTableLength = br.ReadUInt32();
                 FileDataOffset = br.ReadUInt32();
             }
+
             public string Signature;
             public ushort Endianness;
             public ushort HeaderSize;
@@ -66,6 +67,7 @@ namespace pk3DS.Core.CTR
             public uint FileTableLength;
             public uint FileDataOffset;
         }
+
         public class FileTableEntry
         {
             public FileTableEntry(BinaryReader br = null)
@@ -77,15 +79,18 @@ namespace pk3DS.Core.CTR
                 DataOffset = br.ReadUInt32();
                 DataLength = br.ReadUInt32();
             }
+
             public uint NameOffset;
             public bool IsFolder;
             public uint DataOffset; // FOLDER: Parent Entry Index
             public uint DataLength; // FOLDER: Next Folder Index
         }
+
         public class NameTableEntry
         {
             public uint NameOffset;
             public string FileName;
+
             public NameTableEntry(uint offset, string fileName)
             {
                 NameOffset = offset;
@@ -94,47 +99,46 @@ namespace pk3DS.Core.CTR
         }
 
         // DARC r/w
-        public static byte[] setDARC(DARC darc)
+        public static byte[] SetDARC(DARC darc)
         {
             // Package DARC into a writable array.
-            using (MemoryStream ms = new MemoryStream())
-            using (BinaryWriter bw = new BinaryWriter(ms))
+            using MemoryStream ms = new MemoryStream();
+            using BinaryWriter bw = new BinaryWriter(ms);
+            // Write Header
+            bw.Write(Encoding.ASCII.GetBytes(darc.Header.Signature));
+            bw.Write(darc.Header.Endianness);
+            bw.Write(darc.Header.HeaderSize);
+            bw.Write(darc.Header.Version);
+            bw.Write(darc.Header.FileSize);
+            bw.Write(darc.Header.FileTableOffset);
+            bw.Write(darc.Header.FileTableLength);
+            bw.Write(darc.Header.FileDataOffset);
+            // Write FileTableEntries
+            foreach (FileTableEntry entry in darc.Entries)
             {
-                // Write Header
-                bw.Write(Encoding.ASCII.GetBytes(darc.Header.Signature));
-                bw.Write(darc.Header.Endianness);
-                bw.Write(darc.Header.HeaderSize);
-                bw.Write(darc.Header.Version);
-                bw.Write(darc.Header.FileSize);
-                bw.Write(darc.Header.FileTableOffset);
-                bw.Write(darc.Header.FileTableLength);
-                bw.Write(darc.Header.FileDataOffset);
-                // Write FileTableEntries
-                foreach (FileTableEntry entry in darc.Entries)
-                {
-                    bw.Write(entry.NameOffset | (entry.IsFolder ? (uint)1 << 24 : 0));
-                    bw.Write(entry.DataOffset);
-                    bw.Write(entry.DataLength);
-                }
-                foreach (NameTableEntry entry in darc.FileNameTable)
-                {
-                    bw.Write(Encoding.Unicode.GetBytes(entry.FileName + "\0"));
-                }
-                while (bw.BaseStream.Position < darc.Header.FileDataOffset)
-                    bw.Write((byte)0);
-
-                // Write Data
-                bw.Write(darc.Data);
-
-                return ms.ToArray();
+                bw.Write(entry.NameOffset | (entry.IsFolder ? (uint)1 << 24 : 0));
+                bw.Write(entry.DataOffset);
+                bw.Write(entry.DataLength);
             }
+            foreach (NameTableEntry entry in darc.FileNameTable)
+            {
+                bw.Write(Encoding.Unicode.GetBytes(entry.FileName + "\0"));
+            }
+            while (bw.BaseStream.Position < darc.Header.FileDataOffset)
+                bw.Write((byte)0);
+
+            // Write Data
+            bw.Write(darc.Data);
+
+            return ms.ToArray();
         }
-        public static DARC getDARC(string folderName)
+
+        public static DARC GetDARC(string folderName)
         {
             // Package Folder into a DARC.
             List<FileTableEntry> EntryList = new List<FileTableEntry>();
             List<NameTableEntry> NameList = new List<NameTableEntry>();
-            byte[] Data = new byte[0];
+            byte[] Data = Array.Empty<byte>();
             uint nameOffset = 6; // 00 00 + 00 2E 00 00
             #region Build FileTable/NameTables
             {
@@ -168,7 +172,6 @@ namespace pk3DS.Core.CTR
                         string fileName = fi.Name;
                         NameList.Add(new NameTableEntry(nameOffset, parentName));
 
-
                         EntryList.Add(new FileTableEntry
                         {
                             DataOffset = (uint) Data.Length,
@@ -187,8 +190,8 @@ namespace pk3DS.Core.CTR
             int darcFileCount = NameList.Count;
             int NameListOffset = darcFileCount * 0xC;
             int NameListLength = (int)(nameOffset + NameListOffset);
-            int DataOffset = NameListLength % 4 == 0 ? NameListLength : NameListLength + (4 - NameListLength % 4);
-            Array.Resize(ref Data, Data.Length % 4 == 0 ? Data.Length : Data.Length + 4 - Data.Length % 4);
+            int DataOffset = NameListLength % 4 == 0 ? NameListLength : NameListLength + (4 - (NameListLength % 4));
+            Array.Resize(ref Data, Data.Length % 4 == 0 ? Data.Length : Data.Length + 4 - (Data.Length % 4));
             int FinalSize = DataOffset + Data.Length;
 
             // Create New DARC
@@ -196,9 +199,9 @@ namespace pk3DS.Core.CTR
             {
                 Header =
                 {
-                    Signature = "darc", 
-                    Endianness = 0xFEFF, 
-                    HeaderSize = 0x1C, 
+                    Signature = "darc",
+                    Endianness = 0xFEFF,
+                    HeaderSize = 0x1C,
                     Version = 1,
                     FileSize = (uint)FinalSize,
                     FileTableOffset = 0x1C,
@@ -219,12 +222,13 @@ namespace pk3DS.Core.CTR
             return darc;
         }
 
-        public static bool darc2files(string path, string folderName)
+        public static bool Darc2files(string path, string folderName)
         {
-            try { return darc2files(File.ReadAllBytes(path), folderName); }
+            try { return Darc2files(File.ReadAllBytes(path), folderName); }
             catch (Exception) { return false; }
         }
-        public static bool darc2files(byte[] darc, string folderName)
+
+        public static bool Darc2files(byte[] darc, string folderName)
         {
             // Save all contents of a DARC to a folder, assuming there's only 1 layer of folders.
             try
@@ -241,7 +245,7 @@ namespace pk3DS.Core.CTR
                 for (int i = 2; i < DARC.FileNameTable.Length;)
                 {
                     bool isFolder = DARC.Entries[i].IsFolder;
-                    if (!isFolder) 
+                    if (!isFolder)
                         return false;
                     // uint level = DARC.Entries[i].DataOffset; Only assuming 1 layer of folders.
                     string parentName = DARC.FileNameTable[i].FileName;
@@ -266,7 +270,8 @@ namespace pk3DS.Core.CTR
             }
             catch (Exception) { return false; }
         }
-        public static bool files2darc(string folderName, bool delete = false, string originalDARC = null, string outFile = null)
+
+        public static bool Files2darc(string folderName, bool delete = false, string originalDARC = null, string outFile = null)
         {
             // Save all contents of a folder to a darc.
             try
@@ -278,23 +283,23 @@ namespace pk3DS.Core.CTR
                 {
                     // Fetch offset of DARC within file.
                     byte[] darc = File.ReadAllBytes(originalDARC);
-                    int darcPos = getDARCposition(darc);
+                    int darcPos = GetDARCposition(darc);
                     if (darcPos < 0) return false;
                     byte[] origData = darc.Skip(darcPos).ToArray();
 
                     orig = new DARC(origData);
-                    orig = insertFiles(orig, folderName);
-                    byte[] newDARC = setDARC(orig);
+                    orig = InsertFiles(orig, folderName);
+                    byte[] newDARC = SetDARC(orig);
                     darcData = darc.Take(darcPos).Concat(newDARC).ToArray();
                 }
                 else // no existing darc to get
                 {
-                    orig = getDARC(folderName);
-                    darcData = setDARC(orig);
+                    orig = GetDARC(folderName);
+                    darcData = SetDARC(orig);
                 }
 
                 // Fetch final name if not specified
-                outFile = outFile ?? originalDARC ?? new DirectoryInfo(folderName).Name.Replace("_d", "") + ".darc";
+                outFile ??= originalDARC ?? new DirectoryInfo(folderName).Name.Replace("_d", "") + ".darc";
 
                 if (darcData == null) return false;
                 File.WriteAllBytes(outFile, darcData);
@@ -306,19 +311,21 @@ namespace pk3DS.Core.CTR
         }
 
         // DARC Utility
-        public static int getDARCposition(byte[] data)
+        public static int GetDARCposition(byte[] data)
         {
             int pos = 0;
             while (BitConverter.ToUInt32(data, pos) != 0x63726164)
             { pos += 4; if (pos >= data.Length) return -1; }
             return pos;
         }
-        public static bool insertFile(ref DARC orig, int index, string path)
+
+        public static bool InsertFile(ref DARC orig, int index, string path)
         {
-            try { return insertFile(ref orig, index, File.ReadAllBytes(path)); }
+            try { return InsertFile(ref orig, index, File.ReadAllBytes(path)); }
             catch (Exception) { return false; }
         }
-        public static bool insertFile(ref DARC orig, int index, byte[] data)
+
+        public static bool InsertFile(ref DARC orig, int index, byte[] data)
         {
             if (index < 0) return false;
 
@@ -338,13 +345,14 @@ namespace pk3DS.Core.CTR
                 // Fix Offset references of other files
                 foreach (var x in orig.Entries.Where(x => x.DataOffset >= offset + oldLength))
                     x.DataOffset += (uint) diff;
-                orig.Entries[index].DataLength = (uint)data.Length; 
+                orig.Entries[index].DataLength = (uint)data.Length;
                 orig.Header.FileSize += (uint)diff;
                 return true;
             }
             catch (Exception) { return false; }
         }
-        public static DARC insertFiles(DARC orig, string folderName)
+
+        public static DARC InsertFiles(DARC orig, string folderName)
         {
             string[] fileNames = new string[orig.Entries.Length];
             for (int i = 0; i < fileNames.Length; i++)
@@ -361,10 +369,10 @@ namespace pk3DS.Core.CTR
                 if (orig.Entries[index].IsFolder)
                     throw new Exception(file + " is not a valid file to reinsert!");
 
-                insertFile(ref orig, index, file);
+                InsertFile(ref orig, index, file);
             }
             // Fix Data layout
-            Array.Resize(ref orig.Data, orig.Data.Length % 4 == 0 ? orig.Data.Length : orig.Data.Length + 4 - orig.Data.Length % 4);
+            Array.Resize(ref orig.Data, orig.Data.Length % 4 == 0 ? orig.Data.Length : orig.Data.Length + 4 - (orig.Data.Length % 4));
             orig.Header.FileSize = (uint)(orig.Data.Length + orig.Header.FileDataOffset);
             return orig;
         }

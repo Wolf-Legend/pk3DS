@@ -38,7 +38,7 @@ namespace pk3DS
             CB_Nature.Items.AddRange(natureslist.Take(25).ToArray());
             RandSettings.GetFormSettings(this, tabPage2.Controls);
 
-            loadData();
+            LoadData();
         }
 
         public static Dictionary<int, int[]> GetMegaDictionary(GameConfig config)
@@ -53,14 +53,16 @@ namespace pk3DS
         private readonly int fieldSize = Main.Config.ORAS ? 0x24 : 0x18;
         private readonly int count = Main.Config.ORAS ? 0x25 : 0x13;
         private EncounterGift6[] GiftData;
-        private readonly string[] abilitylist = Main.Config.getText(TextName.AbilityNames);
-        private readonly string[] movelist = Main.Config.getText(TextName.MoveNames);
-        private readonly string[] itemlist = Main.Config.getText(TextName.ItemNames);
-        private readonly string[] specieslist = Main.Config.getText(TextName.SpeciesNames);
-        private readonly string[] natureslist = Main.Config.getText(TextName.Natures);
+        //private readonly string[] abilitylist = Main.Config.GetText(TextName.AbilityNames);
+        //private readonly string[] movelist = Main.Config.GetText(TextName.MoveNames);
+        private readonly string[] itemlist = Main.Config.GetText(TextName.ItemNames);
+        private readonly string[] specieslist = Main.Config.GetText(TextName.SpeciesNames);
+        private readonly string[] natureslist = Main.Config.GetText(TextName.Natures);
         private readonly Dictionary<int, int[]> MegaDictionary;
-        private static int[] FinalEvo;
-        
+        private static int[] FinalEvo = Legal.FinalEvolutions_6;
+        private static readonly int[] Legendary = Legal.Legendary_6;
+        private static readonly int[] Mythical = Legal.Mythical_6;
+
         private readonly string[] ability =
         {
             "Any (1 or 2)",
@@ -68,25 +70,28 @@ namespace pk3DS
             "Ability 2",
             "Hidden Ability",
         };
+
         private void B_Save_Click(object sender, EventArgs e)
         {
-            saveEntry();
-            saveData();
+            SaveEntry();
+            SaveData();
             RandSettings.SetFormSettings(this, tabPage2.Controls);
             Close();
         }
+
         private void B_Cancel_Click(object sender, EventArgs e)
         {
             Close();
         }
-        private void loadData()
+
+        private void LoadData()
         {
             FieldData = File.ReadAllBytes(FieldPath);
             GiftData = new EncounterGift6[count];
             LB_Gifts.Items.Clear();
             for (int i = 0; i < GiftData.Length; i++)
             {
-                GiftData[i] = new EncounterGift6(FieldData.Skip(fieldOffset + i * fieldSize).Take(fieldSize).ToArray(), Main.Config.ORAS);
+                GiftData[i] = new EncounterGift6(FieldData.Skip(fieldOffset + (i * fieldSize)).Take(fieldSize).ToArray(), Main.Config.ORAS);
                 LB_Gifts.Items.Add($"{i:00} - {specieslist[GiftData[i].Species]}");
             }
             foreach (var s in ability) CB_Ability.Items.Add(s);
@@ -96,12 +101,11 @@ namespace pk3DS
             CB_Gender.Items.Add("♂ / Male");
             CB_Gender.Items.Add("♀ / Female");
 
-            FinalEvo = Legal.FinalEvolutions_6;
-
             loaded = true;
             LB_Gifts.SelectedIndex = 0;
         }
-        private void saveData()
+
+        private void SaveData()
         {
             // Check to see if a starter has been modified right before we write data.
             bool starters = false;
@@ -121,37 +125,38 @@ namespace pk3DS
 
             for (int i = 0; i < GiftData.Length; i++)
             {
-                int offset = fieldOffset + i*fieldSize;
+                int offset = fieldOffset + (i * fieldSize);
 
                 // Check too see if starters got modified
                 if (Array.IndexOf(entries, i) > - 1 && BitConverter.ToUInt16(FieldData, offset) != GiftData[i].Species)
                     starters = true;
-                
+
                 // Write new data
                 Array.Copy(GiftData[i].Write(), 0, FieldData, offset, fieldSize);
             }
 
             if (starters) // are modified
-                WinFormsUtil.Alert("Starters have been modified.", 
-                    "Be sure to update the Starters in DllPoke3Select.cro by updating via the Starter Editor.");
+                WinFormsUtil.Alert("Starters have been modified.", "Be sure to update the Starters in DllPoke3Select.cro by updating via the Starter Editor.");
 
             File.WriteAllBytes(FieldPath, FieldData);
         }
 
         private int entry = -1;
         private bool loaded;
-        private void changeIndex(object sender, EventArgs e)
+
+        private void ChangeIndex(object sender, EventArgs e)
         {
             if (LB_Gifts.SelectedIndex < 0)
                 return;
             if (!loaded)
                 return;
-            if (entry != -1) 
-                saveEntry();
+            if (entry != -1)
+                SaveEntry();
             entry = LB_Gifts.SelectedIndex;
-            loadEntry();
+            LoadEntry();
         }
-        private void loadEntry()
+
+        private void LoadEntry()
         {
             bool oldloaded = loaded;
             loaded = false;
@@ -177,7 +182,8 @@ namespace pk3DS
 
             loaded |= oldloaded;
         }
-        private void saveEntry()
+
+        private void SaveEntry()
         {
             GiftData[entry].Species = (ushort)CB_Species.SelectedIndex;
             GiftData[entry].HeldItem = CB_HeldItem.SelectedIndex;
@@ -217,7 +223,12 @@ namespace pk3DS
                 rBST = CHK_BST.Checked,
             };
             specrand.Initialize();
-            var helditems = Randomizer.getRandomItemList();
+
+            // add Legendary/Mythical to final evolutions if checked
+            if (CHK_L.Checked) FinalEvo = FinalEvo.Concat(Legendary).ToArray();
+            if (CHK_E.Checked) FinalEvo = FinalEvo.Concat(Mythical).ToArray();
+
+            var helditems = Randomizer.GetRandomItemList();
             for (int i = 0; i < LB_Gifts.Items.Count; i++)
             {
                 LB_Gifts.SelectedIndex = i;
@@ -229,13 +240,13 @@ namespace pk3DS
                         continue; // skip Lucario, battle needs to Mega Evolve
 
                     int[] items = GetRandomMega(out species);
-                    CB_HeldItem.SelectedIndex = items[Util.rand.Next(0, items.Length)];
+                    CB_HeldItem.SelectedIndex = items[Util.Rand.Next(0, items.Length)];
                 }
                 else
                 {
                     species = specrand.GetRandomSpecies(species);
                     if (CHK_Item.Checked)
-                        CB_HeldItem.SelectedIndex = helditems[Util.rnd32() % helditems.Length];
+                        CB_HeldItem.SelectedIndex = helditems[Util.Random32() % helditems.Length];
                 }
 
                 if (CHK_AllowMega.Checked)
@@ -245,14 +256,14 @@ namespace pk3DS
                     CHK_ShinyLock.Checked = false;
 
                 if (CHK_Level.Checked)
-                    NUD_Level.Value = Randomizer.getModifiedLevel((int)NUD_Level.Value, NUD_LevelBoost.Value);
+                    NUD_Level.Value = Randomizer.GetModifiedLevel((int)NUD_Level.Value, NUD_LevelBoost.Value);
 
                 if (CHK_RandomAbility.Checked)
-                    CB_Ability.SelectedIndex = (Util.rand.Next(1, 4)); // 1, 2 , or H
+                    CB_Ability.SelectedIndex = (Util.Rand.Next(1, 4)); // 1, 2 , or H
 
                 if (CHK_ForceFullyEvolved.Checked && NUD_Level.Value >= NUD_ForceFullyEvolved.Value && !FinalEvo.Contains(species))
                 {
-                    int randFinalEvo() => (int)(Util.rnd32() % FinalEvo.Length);
+                    static int randFinalEvo() => (int)(Util.Random32() % FinalEvo.Length);
                     species = FinalEvo[randFinalEvo()];
                 }
 
@@ -260,6 +271,7 @@ namespace pk3DS
                 NUD_Form.Value = formrand.GetRandomForme(species);
                 CB_Gender.SelectedIndex = 0; // random
                 CB_Nature.SelectedIndex = 0; // random
+                NUD_IV0.Value = NUD_IV1.Value = NUD_IV2.Value = NUD_IV3.Value = NUD_IV4.Value = NUD_IV5.Value = -1; // random
 
                 if (MegaDictionary.Values.Any(z => z.Contains(CB_HeldItem.SelectedIndex)) && NUD_Form.Value != 0)
                     NUD_Form.Value = 0; // don't allow mega gifts to be form 1
@@ -269,12 +281,12 @@ namespace pk3DS
 
         private int[] GetRandomMega(out int species)
         {
-            int rnd = Util.rand.Next(0, MegaDictionary.Count - 1);
+            int rnd = Util.Rand.Next(0, MegaDictionary.Count - 1);
             species = MegaDictionary.Keys.ElementAt(rnd);
             return MegaDictionary.Values.ElementAt(rnd);
         }
 
-        private static readonly Dictionary<int, int[]> MegaDictionaryXY = new Dictionary<int, int[]>
+        private static readonly Dictionary<int, int[]> MegaDictionaryXY = new()
         {
             {003, new[] {659}}, // Venusaur @ Venusaurite
             {006, new[] {660, 678}}, // Charizard @ Charizardite X/Y
@@ -305,7 +317,8 @@ namespace pk3DS
             {448, new[] {673}}, // Lucario @ Lucarionite
             {460, new[] {674}}, // Abomasnow @ Abomasite
         };
-        private static readonly Dictionary<int, int[]> MegaDictionaryAO = new Dictionary<int, int[]>
+
+        private static readonly Dictionary<int, int[]> MegaDictionaryAO = new()
         {
             {015, new[] {770}}, // Beedrill @ Beedrillite
             {018, new[] {762}}, // Pidgeot @ Pidgeotite
@@ -325,7 +338,8 @@ namespace pk3DS
             {531, new[] {757}}, // Audino @ Audinite
             {719, new[] {764}}, // Diancie @ Diancite
         };
-        private void changeSpecies(object sender, EventArgs e)
+
+        private void ChangeSpecies(object sender, EventArgs e)
         {
             int index = LB_Gifts.SelectedIndex;
             LB_Gifts.Items[index] = index.ToString("00") + " - " + CB_Species.Text;
@@ -338,7 +352,7 @@ namespace pk3DS
             for (int i = 0; i < LB_Gifts.Items.Count; i++)
             {
                 LB_Gifts.SelectedIndex = i;
-                NUD_Level.Value = Randomizer.getModifiedLevel((int)NUD_Level.Value, NUD_LevelBoost.Value);
+                NUD_Level.Value = Randomizer.GetModifiedLevel((int)NUD_Level.Value, NUD_LevelBoost.Value);
             }
             WinFormsUtil.Alert("Modified all Levels according to specification!");
         }

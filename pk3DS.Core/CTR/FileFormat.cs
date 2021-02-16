@@ -13,25 +13,22 @@ namespace pk3DS.Core.CTR
 
         public static string Guess(string path)
         {
-            string ext;
-            using (BinaryReader br = new BinaryReader(File.OpenRead(path)))
-                ext = Guess(br);
-            return ext;
+            using BinaryReader br = new BinaryReader(File.OpenRead(path));
+            return Guess(br);
         }
+
         public static string Guess(byte[] data)
         {
-            string ext;
-            using (BinaryReader br = new BinaryReader(new MemoryStream(data)))
-                ext = Guess(br);
-            return ext;
+            using BinaryReader br = new BinaryReader(new MemoryStream(data));
+            return Guess(br);
         }
+
         public static string Guess(MemoryStream ms, bool start = true)
         {
-            string ext;
-            using (BinaryReader br = new BinaryReader(ms))
-                ext = Guess(br, start);
-            return ext;
+            using BinaryReader br = new BinaryReader(ms);
+            return Guess(br, start);
         }
+
         public static string Guess(BinaryReader br, bool start = true)
         {
             long position = br.BaseStream.Position; // Store current position to reset after.
@@ -40,8 +37,7 @@ namespace pk3DS.Core.CTR
                 br.BaseStream.Position = 0;
 
             // Guess Extension
-            string ext;
-            if (GuessMini(br, out ext))
+            if (GuessMini(br, out var ext))
                 Console.WriteLine("Mini Packed File detected, extension type " + ext);
             else if (GuessHeaderedDARC(br, out ext))
                 Console.WriteLine("Headered DARC File detected, extension type " + ext);
@@ -69,7 +65,7 @@ namespace pk3DS.Core.CTR
                 // check for 2char container extensions
                 ushort magic = br.ReadUInt16();
                 ushort count = br.ReadUInt16();
-                br.BaseStream.Position = 4 + 4 * count;
+                br.BaseStream.Position = 4 + (4 * count);
                 if (br.ReadUInt32() == br.BaseStream.Length)
                 {
                     ext += (char)magic & 0xFF;
@@ -82,6 +78,7 @@ namespace pk3DS.Core.CTR
 
             return ext.Length > 0;
         }
+
         public static bool GuessHeaderedDARC(BinaryReader br, out string ext)
         {
             long position = br.BaseStream.Position; // Store current position to reset after.
@@ -90,7 +87,7 @@ namespace pk3DS.Core.CTR
             {
                 byte[] magic = Encoding.ASCII.GetBytes(br.ReadChars(4));
                 int count = BitConverter.ToUInt16(magic, 0);
-                br.BaseStream.Position = position + 4 + 0x40 * count;
+                br.BaseStream.Position = position + 4 + (0x40 * count);
                 uint tableval = br.ReadUInt32();
                 br.BaseStream.Position += 0x20 * tableval;
                 while (br.PeekChar() == 0) // seek forward
@@ -104,6 +101,7 @@ namespace pk3DS.Core.CTR
 
             return ext.Length > 0;
         }
+
         public static bool GuessBCLIM(BinaryReader br, out string ext)
         {
             long position = br.BaseStream.Position; // Store current position to reset after.
@@ -124,6 +122,7 @@ namespace pk3DS.Core.CTR
 
             return ext.Length > 0;
         }
+
         public static bool GuessLZ11(BinaryReader br, out string ext)
         {
             long position = br.BaseStream.Position; // Store current position to reset after.
@@ -144,6 +143,7 @@ namespace pk3DS.Core.CTR
             br.BaseStream.Position = position;
             return ext.Length > 0;
         }
+
         public static bool Guess4CHAR(BinaryReader br, out string ext)
         {
             long position = br.BaseStream.Position; // Store current position to reset after.
@@ -163,6 +163,7 @@ namespace pk3DS.Core.CTR
             br.BaseStream.Position = position;
             return false;
         }
+
         public static bool Guess3CHAR(BinaryReader br, out string ext)
         {
             long position = br.BaseStream.Position; // Store current position to reset after.

@@ -17,11 +17,13 @@ namespace pk3DS.Core.Structures
         public EvolutionMethod[] PossibleEvolutions;
         public abstract byte[] Write();
     }
+
     public class EvolutionSet6 : EvolutionSet
     {
         private const int ENTRY_SIZE = 6;
         private const int ENTRY_COUNT = 8;
         public const int SIZE = ENTRY_COUNT * ENTRY_SIZE;
+
         public EvolutionSet6(byte[] data)
         {
             if (data.Length != SIZE) return;
@@ -43,26 +45,27 @@ namespace pk3DS.Core.Structures
                 //    PossibleEvolutions[i / SIZE].Level = 0;
             }
         }
+
         public override byte[] Write()
         {
-            using (MemoryStream ms = new MemoryStream())
-            using (BinaryWriter bw = new BinaryWriter(ms))
+            using MemoryStream ms = new MemoryStream();
+            using BinaryWriter bw = new BinaryWriter(ms);
+            foreach (EvolutionMethod evo in PossibleEvolutions)
             {
-                foreach (EvolutionMethod evo in PossibleEvolutions)
-                {
-                    bw.Write((ushort)evo.Method);
-                    bw.Write((ushort)evo.Argument);
-                    bw.Write((ushort)evo.Species);
-                }
-                return ms.ToArray();
+                bw.Write((ushort)evo.Method);
+                bw.Write((ushort)evo.Argument);
+                bw.Write((ushort)evo.Species);
             }
+            return ms.ToArray();
         }
     }
+
     public class EvolutionSet7 : EvolutionSet
     {
         private const int ENTRY_SIZE = 8;
         private const int ENTRY_COUNT = 8;
         public const int SIZE = ENTRY_COUNT * ENTRY_SIZE;
+
         public EvolutionSet7(byte[] data)
         {
             if (data.Length != SIZE) return;
@@ -79,21 +82,20 @@ namespace pk3DS.Core.Structures
                 };
             }
         }
+
         public override byte[] Write()
         {
-            using (MemoryStream ms = new MemoryStream())
-            using (BinaryWriter bw = new BinaryWriter(ms))
+            using MemoryStream ms = new MemoryStream();
+            using BinaryWriter bw = new BinaryWriter(ms);
+            foreach (EvolutionMethod evo in PossibleEvolutions)
             {
-                foreach (EvolutionMethod evo in PossibleEvolutions)
-                {
-                    bw.Write((ushort)evo.Method);
-                    bw.Write((ushort)evo.Argument);
-                    bw.Write((ushort)evo.Species);
-                    bw.Write((sbyte)evo.Form);
-                    bw.Write((byte)evo.Level);
-                }
-                return ms.ToArray();
+                bw.Write((ushort)evo.Method);
+                bw.Write((ushort)evo.Argument);
+                bw.Write((ushort)evo.Species);
+                bw.Write((sbyte)evo.Form);
+                bw.Write((byte)evo.Level);
             }
+            return ms.ToArray();
         }
     }
 }

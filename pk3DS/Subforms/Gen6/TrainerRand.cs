@@ -13,21 +13,24 @@ namespace pk3DS
         {
             InitializeComponent();
             CB_Moves.SelectedIndex = 1;
-            trClassnorep = new List<string>();
+            var trClassnorep = new List<string>();
             foreach (string tclass in trClass.Where(tclass => !trClassnorep.Contains(tclass) && !tclass.StartsWith("[~")))
                 trClassnorep.Add(tclass);
             trClassnorep.Sort();
             RandSettings.GetFormSettings(this, Controls);
         }
 
-        private string[] trName = Main.Config.getText(TextName.TrainerNames);
-        private readonly string[] trClass = Main.Config.getText(TextName.TrainerClasses);
-        private readonly List<string> trClassnorep;
+        //private readonly string[] trName = Main.Config.GetText(TextName.TrainerNames);
+        private readonly string[] trClass = Main.Config.GetText(TextName.TrainerClasses);
+        //private readonly List<string> trClassnorep;
+        private static readonly int[] Legendary = Legal.Legendary_6;
+        private static readonly int[] Mythical = Legal.Mythical_6;
 
         private void B_Close_Click(object sender, EventArgs e)
         {
             Close();
         }
+
         private void B_Save_Click(object sender, EventArgs e)
         {
             if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Randomize all? Cannot undo.", "Double check Randomization settings before continuing.") != DialogResult.Yes)
@@ -62,7 +65,7 @@ namespace pk3DS
                     ? Main.Config.ORAS
                         ? Legal.SpecialClasses_ORAS
                         : Legal.SpecialClasses_XY
-                    : new int[] {};
+                    : Array.Empty<int>();
                 RSTE.rOnlySingles = CHK_OnlySingles.Checked;
             }
             RSTE.rGift = CHK_RandomGift.Checked;
@@ -71,6 +74,8 @@ namespace pk3DS
             RSTE.rTypeTheme = CHK_TypeTheme.Checked;
             RSTE.rTypeGymTrainers = CHK_GymTrainers.Checked;
             RSTE.rGymE4Only = CHK_GymE4Only.Checked;
+            RSTE.rMinPKM = NUD_RMin.Value;
+            RSTE.rMaxPKM = NUD_RMax.Value;
             RSTE.r6PKM = CHK_6PKM.Checked;
             RSTE.rRandomMegas = CHK_RandomMegaForm.Checked;
             RSTE.rForceFullyEvolved = CHK_ForceFullyEvolved.Checked;
@@ -80,15 +85,15 @@ namespace pk3DS
 
             if (CHK_StoryMEvos.Checked)
             {
-                RSTE.rEnsureMEvo = Main.Config.ORAS 
-                    ? new [] { 178, 235, 557, 583, 687, 698, 699, 700, 701, 713, 906, 907, 908, 909, 910, 911, 912, 913, 942, 944, 946 } 
+                RSTE.rEnsureMEvo = Main.Config.ORAS
+                    ? new [] { 178, 235, 557, 583, 687, 698, 699, 700, 701, 713, 906, 907, 908, 909, 910, 911, 912, 913, 942, 944, 946 }
                     : new [] { 188, 263, 276, 277, 519, 520, 521, 526, 599, 600, 601 };
             }
             else
             {
-                RSTE.rEnsureMEvo = new int[] { };
+                RSTE.rEnsureMEvo = Array.Empty<int>();
             }
-            
+
             RSTE.rThemedClasses = new bool[trClass.Length];
             RSTE.rSpeciesRand = new SpeciesRandomizer(Main.Config)
             {
@@ -108,6 +113,10 @@ namespace pk3DS
             };
             RSTE.rSpeciesRand.Initialize();
 
+            // add Legendary/Mythical to final evolutions if checked
+            if (CHK_L.Checked) RSTE.rFinalEvo = RSTE.rFinalEvo.Concat(Legendary).ToArray();
+            if (CHK_E.Checked) RSTE.rFinalEvo = RSTE.rFinalEvo.Concat(Mythical).ToArray();
+
             RSTE.rDoRand = true;
             RandSettings.SetFormSettings(this, Controls);
             Close();
@@ -115,13 +124,13 @@ namespace pk3DS
 
         private void CHK_RandomPKM_CheckedChanged(object sender, EventArgs e)
         {
-            GB_Tweak.Enabled = 
-                CHK_G1.Checked = CHK_G2.Checked = CHK_G3.Checked = 
-                CHK_G4.Checked = CHK_G5.Checked = CHK_G6.Checked = 
+            GB_Tweak.Enabled =
+                CHK_G1.Checked = CHK_G2.Checked = CHK_G3.Checked =
+                CHK_G4.Checked = CHK_G5.Checked = CHK_G6.Checked =
                 CHK_L.Checked = CHK_E.Checked = CHK_StoryMEvos.Checked = CHK_ForceFullyEvolved.Checked =
                 CHK_RandomPKM.Checked;
 
-            CHK_TypeTheme.Checked = CHK_GymTrainers.Checked = CHK_GymE4Only.Checked = 
+            CHK_TypeTheme.Checked = CHK_GymTrainers.Checked = CHK_GymE4Only.Checked =
                 CHK_BST.Checked = CHK_6PKM.Checked = CHK_RandomMegaForm.Checked = false; // Off by default
         }
 
@@ -129,16 +138,19 @@ namespace pk3DS
         {
             NUD_Level.Enabled = CHK_Level.Checked;
         }
-        private void changeLevelPercent(object sender, EventArgs e)
+
+        private void ChangeLevelPercent(object sender, EventArgs e)
         {
             CHK_Level.Checked = NUD_Level.Value != 0;
         }
+
         private void CHK_RandomGift_CheckedChanged(object sender, EventArgs e)
         {
             NUD_GiftPercent.Enabled = CHK_RandomGift.Checked;
             NUD_GiftPercent.Value = Convert.ToDecimal(CHK_RandomGift.Checked) * 15;
         }
-        private void changeGiftPercent(object sender, EventArgs e)
+
+        private void ChangeGiftPercent(object sender, EventArgs e)
         {
             CHK_RandomGift.Checked = NUD_GiftPercent.Value != 0;
         }
@@ -152,11 +164,11 @@ namespace pk3DS
 
         private void CHK_RandomClass_CheckedChanged(object sender, EventArgs e)
         {
-            CHK_IgnoreSpecialClass.Enabled = CHK_IgnoreSpecialClass.Checked = 
+            CHK_IgnoreSpecialClass.Enabled = CHK_IgnoreSpecialClass.Checked =
             CHK_OnlySingles.Enabled = CHK_OnlySingles.Checked = CHK_RandomClass.Checked;
         }
 
-        private void changeMoveRandomization(object sender, EventArgs e)
+        private void ChangeMoveRandomization(object sender, EventArgs e)
         {
             CHK_Damage.Checked = CHK_STAB.Checked =
             CHK_Damage.Enabled = CHK_STAB.Enabled =
@@ -165,6 +177,7 @@ namespace pk3DS
             CHK_ForceHighPower.Enabled = CHK_ForceHighPower.Checked = NUD_ForceHighPower.Enabled =
             CHK_NoFixedDamage.Enabled = CHK_NoFixedDamage.Checked = (CB_Moves.SelectedIndex == 1 || CB_Moves.SelectedIndex == 2);
         }
+
         private void CHK_6PKM_CheckedChanged(object sender, EventArgs e)
         {
             //if (CB_Moves.SelectedIndex == 0)

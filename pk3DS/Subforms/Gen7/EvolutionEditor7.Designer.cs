@@ -94,6 +94,9 @@
             this.label7 = new System.Windows.Forms.Label();
             this.CB_M8 = new System.Windows.Forms.ComboBox();
             this.B_Trade = new System.Windows.Forms.Button();
+            this.B_EveryLevel = new System.Windows.Forms.Button();
+            this.CHK_E = new System.Windows.Forms.CheckBox();
+            this.CHK_L = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.PB_1)).BeginInit();
             this.GB_Randomizer.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.NUD_F1)).BeginInit();
@@ -130,7 +133,7 @@
             this.CB_Species.Name = "CB_Species";
             this.CB_Species.Size = new System.Drawing.Size(121, 21);
             this.CB_Species.TabIndex = 1;
-            this.CB_Species.SelectedIndexChanged += new System.EventHandler(this.changeEntry);
+            this.CB_Species.SelectedIndexChanged += new System.EventHandler(this.ChangeEntry);
             // 
             // L_Species
             // 
@@ -161,7 +164,7 @@
             this.CB_M1.Name = "CB_M1";
             this.CB_M1.Size = new System.Drawing.Size(150, 21);
             this.CB_M1.TabIndex = 6;
-            this.CB_M1.SelectedIndexChanged += new System.EventHandler(this.changeMethod);
+            this.CB_M1.SelectedIndexChanged += new System.EventHandler(this.ChangeMethod);
             // 
             // L_M1
             // 
@@ -181,7 +184,7 @@
             this.CB_I1.Name = "CB_I1";
             this.CB_I1.Size = new System.Drawing.Size(101, 21);
             this.CB_I1.TabIndex = 9;
-            this.CB_I1.SelectedIndexChanged += new System.EventHandler(this.changeInto);
+            this.CB_I1.SelectedIndexChanged += new System.EventHandler(this.ChangeInto);
             // 
             // CB_P1
             // 
@@ -203,7 +206,7 @@
             // 
             // B_RandAll
             // 
-            this.B_RandAll.Location = new System.Drawing.Point(511, 322);
+            this.B_RandAll.Location = new System.Drawing.Point(511, 324);
             this.B_RandAll.Name = "B_RandAll";
             this.B_RandAll.Size = new System.Drawing.Size(100, 23);
             this.B_RandAll.TabIndex = 62;
@@ -213,13 +216,15 @@
             // 
             // GB_Randomizer
             // 
+            this.GB_Randomizer.Controls.Add(this.CHK_E);
+            this.GB_Randomizer.Controls.Add(this.CHK_L);
             this.GB_Randomizer.Controls.Add(this.L_Protip);
             this.GB_Randomizer.Controls.Add(this.CHK_BST);
             this.GB_Randomizer.Controls.Add(this.CHK_Type);
             this.GB_Randomizer.Controls.Add(this.CHK_Exp);
             this.GB_Randomizer.Location = new System.Drawing.Point(16, 292);
             this.GB_Randomizer.Name = "GB_Randomizer";
-            this.GB_Randomizer.Size = new System.Drawing.Size(357, 76);
+            this.GB_Randomizer.Size = new System.Drawing.Size(357, 104);
             this.GB_Randomizer.TabIndex = 63;
             this.GB_Randomizer.TabStop = false;
             this.GB_Randomizer.Text = "Randomizer Options";
@@ -286,7 +291,7 @@
             this.NUD_F1.Name = "NUD_F1";
             this.NUD_F1.Size = new System.Drawing.Size(45, 20);
             this.NUD_F1.TabIndex = 64;
-            this.NUD_F1.ValueChanged += new System.EventHandler(this.changeInto);
+            this.NUD_F1.ValueChanged += new System.EventHandler(this.ChangeInto);
             // 
             // NUD_L1
             // 
@@ -338,7 +343,7 @@
             this.NUD_F2.Name = "NUD_F2";
             this.NUD_F2.Size = new System.Drawing.Size(45, 20);
             this.NUD_F2.TabIndex = 71;
-            this.NUD_F2.ValueChanged += new System.EventHandler(this.changeInto);
+            this.NUD_F2.ValueChanged += new System.EventHandler(this.ChangeInto);
             // 
             // PB_2
             // 
@@ -367,7 +372,7 @@
             this.CB_I2.Name = "CB_I2";
             this.CB_I2.Size = new System.Drawing.Size(101, 21);
             this.CB_I2.TabIndex = 68;
-            this.CB_I2.SelectedIndexChanged += new System.EventHandler(this.changeInto);
+            this.CB_I2.SelectedIndexChanged += new System.EventHandler(this.ChangeInto);
             // 
             // label1
             // 
@@ -388,7 +393,7 @@
             this.CB_M2.Name = "CB_M2";
             this.CB_M2.Size = new System.Drawing.Size(150, 21);
             this.CB_M2.TabIndex = 66;
-            this.CB_M2.SelectedIndexChanged += new System.EventHandler(this.changeMethod);
+            this.CB_M2.SelectedIndexChanged += new System.EventHandler(this.ChangeMethod);
             // 
             // NUD_L3
             // 
@@ -423,7 +428,7 @@
             this.NUD_F3.Name = "NUD_F3";
             this.NUD_F3.Size = new System.Drawing.Size(45, 20);
             this.NUD_F3.TabIndex = 78;
-            this.NUD_F3.ValueChanged += new System.EventHandler(this.changeInto);
+            this.NUD_F3.ValueChanged += new System.EventHandler(this.ChangeInto);
             // 
             // PB_3
             // 
@@ -452,7 +457,7 @@
             this.CB_I3.Name = "CB_I3";
             this.CB_I3.Size = new System.Drawing.Size(101, 21);
             this.CB_I3.TabIndex = 75;
-            this.CB_I3.SelectedIndexChanged += new System.EventHandler(this.changeInto);
+            this.CB_I3.SelectedIndexChanged += new System.EventHandler(this.ChangeInto);
             // 
             // label2
             // 
@@ -473,7 +478,7 @@
             this.CB_M3.Name = "CB_M3";
             this.CB_M3.Size = new System.Drawing.Size(150, 21);
             this.CB_M3.TabIndex = 73;
-            this.CB_M3.SelectedIndexChanged += new System.EventHandler(this.changeMethod);
+            this.CB_M3.SelectedIndexChanged += new System.EventHandler(this.ChangeMethod);
             // 
             // NUD_L4
             // 
@@ -508,7 +513,7 @@
             this.NUD_F4.Name = "NUD_F4";
             this.NUD_F4.Size = new System.Drawing.Size(45, 20);
             this.NUD_F4.TabIndex = 85;
-            this.NUD_F4.ValueChanged += new System.EventHandler(this.changeInto);
+            this.NUD_F4.ValueChanged += new System.EventHandler(this.ChangeInto);
             // 
             // PB_4
             // 
@@ -537,7 +542,7 @@
             this.CB_I4.Name = "CB_I4";
             this.CB_I4.Size = new System.Drawing.Size(101, 21);
             this.CB_I4.TabIndex = 82;
-            this.CB_I4.SelectedIndexChanged += new System.EventHandler(this.changeInto);
+            this.CB_I4.SelectedIndexChanged += new System.EventHandler(this.ChangeInto);
             // 
             // label3
             // 
@@ -558,7 +563,7 @@
             this.CB_M4.Name = "CB_M4";
             this.CB_M4.Size = new System.Drawing.Size(150, 21);
             this.CB_M4.TabIndex = 80;
-            this.CB_M4.SelectedIndexChanged += new System.EventHandler(this.changeMethod);
+            this.CB_M4.SelectedIndexChanged += new System.EventHandler(this.ChangeMethod);
             // 
             // NUD_L5
             // 
@@ -593,7 +598,7 @@
             this.NUD_F5.Name = "NUD_F5";
             this.NUD_F5.Size = new System.Drawing.Size(45, 20);
             this.NUD_F5.TabIndex = 92;
-            this.NUD_F5.ValueChanged += new System.EventHandler(this.changeInto);
+            this.NUD_F5.ValueChanged += new System.EventHandler(this.ChangeInto);
             // 
             // PB_5
             // 
@@ -622,7 +627,7 @@
             this.CB_I5.Name = "CB_I5";
             this.CB_I5.Size = new System.Drawing.Size(101, 21);
             this.CB_I5.TabIndex = 89;
-            this.CB_I5.SelectedIndexChanged += new System.EventHandler(this.changeInto);
+            this.CB_I5.SelectedIndexChanged += new System.EventHandler(this.ChangeInto);
             // 
             // label4
             // 
@@ -643,7 +648,7 @@
             this.CB_M5.Name = "CB_M5";
             this.CB_M5.Size = new System.Drawing.Size(150, 21);
             this.CB_M5.TabIndex = 87;
-            this.CB_M5.SelectedIndexChanged += new System.EventHandler(this.changeMethod);
+            this.CB_M5.SelectedIndexChanged += new System.EventHandler(this.ChangeMethod);
             // 
             // NUD_L6
             // 
@@ -678,7 +683,7 @@
             this.NUD_F6.Name = "NUD_F6";
             this.NUD_F6.Size = new System.Drawing.Size(45, 20);
             this.NUD_F6.TabIndex = 99;
-            this.NUD_F6.ValueChanged += new System.EventHandler(this.changeInto);
+            this.NUD_F6.ValueChanged += new System.EventHandler(this.ChangeInto);
             // 
             // PB_6
             // 
@@ -707,7 +712,7 @@
             this.CB_I6.Name = "CB_I6";
             this.CB_I6.Size = new System.Drawing.Size(101, 21);
             this.CB_I6.TabIndex = 96;
-            this.CB_I6.SelectedIndexChanged += new System.EventHandler(this.changeInto);
+            this.CB_I6.SelectedIndexChanged += new System.EventHandler(this.ChangeInto);
             // 
             // label5
             // 
@@ -728,7 +733,7 @@
             this.CB_M6.Name = "CB_M6";
             this.CB_M6.Size = new System.Drawing.Size(150, 21);
             this.CB_M6.TabIndex = 94;
-            this.CB_M6.SelectedIndexChanged += new System.EventHandler(this.changeMethod);
+            this.CB_M6.SelectedIndexChanged += new System.EventHandler(this.ChangeMethod);
             // 
             // NUD_L7
             // 
@@ -763,7 +768,7 @@
             this.NUD_F7.Name = "NUD_F7";
             this.NUD_F7.Size = new System.Drawing.Size(45, 20);
             this.NUD_F7.TabIndex = 106;
-            this.NUD_F7.ValueChanged += new System.EventHandler(this.changeInto);
+            this.NUD_F7.ValueChanged += new System.EventHandler(this.ChangeInto);
             // 
             // PB_7
             // 
@@ -792,7 +797,7 @@
             this.CB_I7.Name = "CB_I7";
             this.CB_I7.Size = new System.Drawing.Size(101, 21);
             this.CB_I7.TabIndex = 103;
-            this.CB_I7.SelectedIndexChanged += new System.EventHandler(this.changeInto);
+            this.CB_I7.SelectedIndexChanged += new System.EventHandler(this.ChangeInto);
             // 
             // label6
             // 
@@ -813,7 +818,7 @@
             this.CB_M7.Name = "CB_M7";
             this.CB_M7.Size = new System.Drawing.Size(150, 21);
             this.CB_M7.TabIndex = 101;
-            this.CB_M7.SelectedIndexChanged += new System.EventHandler(this.changeMethod);
+            this.CB_M7.SelectedIndexChanged += new System.EventHandler(this.ChangeMethod);
             // 
             // NUD_L8
             // 
@@ -848,7 +853,7 @@
             this.NUD_F8.Name = "NUD_F8";
             this.NUD_F8.Size = new System.Drawing.Size(45, 20);
             this.NUD_F8.TabIndex = 113;
-            this.NUD_F8.ValueChanged += new System.EventHandler(this.changeInto);
+            this.NUD_F8.ValueChanged += new System.EventHandler(this.ChangeInto);
             // 
             // PB_8
             // 
@@ -877,7 +882,7 @@
             this.CB_I8.Name = "CB_I8";
             this.CB_I8.Size = new System.Drawing.Size(101, 21);
             this.CB_I8.TabIndex = 110;
-            this.CB_I8.SelectedIndexChanged += new System.EventHandler(this.changeInto);
+            this.CB_I8.SelectedIndexChanged += new System.EventHandler(this.ChangeInto);
             // 
             // label7
             // 
@@ -898,11 +903,11 @@
             this.CB_M8.Name = "CB_M8";
             this.CB_M8.Size = new System.Drawing.Size(150, 21);
             this.CB_M8.TabIndex = 108;
-            this.CB_M8.SelectedIndexChanged += new System.EventHandler(this.changeMethod);
+            this.CB_M8.SelectedIndexChanged += new System.EventHandler(this.ChangeMethod);
             // 
             // B_Trade
             // 
-            this.B_Trade.Location = new System.Drawing.Point(468, 345);
+            this.B_Trade.Location = new System.Drawing.Point(468, 347);
             this.B_Trade.Name = "B_Trade";
             this.B_Trade.Size = new System.Drawing.Size(143, 23);
             this.B_Trade.TabIndex = 115;
@@ -910,11 +915,42 @@
             this.B_Trade.UseVisualStyleBackColor = true;
             this.B_Trade.Click += new System.EventHandler(this.B_Trade_Click);
             // 
+            // B_EveryLevel
+            // 
+            this.B_EveryLevel.Location = new System.Drawing.Point(446, 370);
+            this.B_EveryLevel.Name = "B_EveryLevel";
+            this.B_EveryLevel.Size = new System.Drawing.Size(165, 23);
+            this.B_EveryLevel.TabIndex = 118;
+            this.B_EveryLevel.Text = "Random Evolution Every Level";
+            this.B_EveryLevel.UseVisualStyleBackColor = true;
+            this.B_EveryLevel.Click += new System.EventHandler(this.B_EveryLevel_Click);
+            // 
+            // CHK_E
+            // 
+            this.CHK_E.AutoSize = true;
+            this.CHK_E.Location = new System.Drawing.Point(6, 83);
+            this.CHK_E.Name = "CHK_E";
+            this.CHK_E.Size = new System.Drawing.Size(98, 17);
+            this.CHK_E.TabIndex = 480;
+            this.CHK_E.Text = "Event Legends";
+            this.CHK_E.UseVisualStyleBackColor = true;
+            // 
+            // CHK_L
+            // 
+            this.CHK_L.AutoSize = true;
+            this.CHK_L.Location = new System.Drawing.Point(6, 68);
+            this.CHK_L.Name = "CHK_L";
+            this.CHK_L.Size = new System.Drawing.Size(98, 17);
+            this.CHK_L.TabIndex = 479;
+            this.CHK_L.Text = "Game Legends";
+            this.CHK_L.UseVisualStyleBackColor = true;
+            // 
             // EvolutionEditor7
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(624, 376);
+            this.ClientSize = new System.Drawing.Size(624, 406);
+            this.Controls.Add(this.B_EveryLevel);
             this.Controls.Add(this.B_Trade);
             this.Controls.Add(this.NUD_L8);
             this.Controls.Add(this.NUD_F8);
@@ -978,12 +1014,12 @@
             this.Controls.Add(this.L_Species);
             this.Controls.Add(this.CB_Species);
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(640, 415);
-            this.MinimumSize = new System.Drawing.Size(640, 415);
+            this.MaximumSize = new System.Drawing.Size(640, 445);
+            this.MinimumSize = new System.Drawing.Size(640, 445);
             this.Name = "EvolutionEditor7";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Evolution Editor";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.formClosing);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Closing);
             ((System.ComponentModel.ISupportInitialize)(this.PB_1)).EndInit();
             this.GB_Randomizer.ResumeLayout(false);
             this.GB_Randomizer.PerformLayout();
@@ -1083,5 +1119,8 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ComboBox CB_M8;
         private System.Windows.Forms.Button B_Trade;
+        private System.Windows.Forms.Button B_EveryLevel;
+        private System.Windows.Forms.CheckBox CHK_E;
+        private System.Windows.Forms.CheckBox CHK_L;
     }
 }

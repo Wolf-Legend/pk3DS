@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace pk3DS
+namespace pk3DS.Core
 {
     public class EncounterTable
     {
@@ -36,13 +36,13 @@ namespace pk3DS
             for (int i = 0; i < Encounter7s.Length - 1; i++)
             {
                 Encounter7s[i] = new Encounter7[10];
-                var ofs = 0xC + i * 4 * Encounter7s[i].Length;
+                var ofs = 0xC + (i * 4 * Encounter7s[i].Length);
                 for (int j = 0; j < Encounter7s[i].Length; j++)
-                    Encounter7s[i][j] = new Encounter7(BitConverter.ToUInt32(t, ofs + 4 * j));
+                    Encounter7s[i][j] = new Encounter7(BitConverter.ToUInt32(t, ofs + (4 * j)));
             }
 
             for (var i = 0; i < AdditionalSOS.Length; i++)
-                AdditionalSOS[i] = new Encounter7(BitConverter.ToUInt32(t, 0x14C + 4 * i));
+                AdditionalSOS[i] = new Encounter7(BitConverter.ToUInt32(t, 0x14C + (4 * i)));
 
             Encounter7s[8] = AdditionalSOS;
         }
@@ -78,13 +78,13 @@ namespace pk3DS
 
             for (int i = 0; i < Encounter7s.Length - 1; i++)
             {
-                var ofs = 0xC + i * 4 * Encounter7s[i].Length;
+                var ofs = 0xC + (i * 4 * Encounter7s[i].Length);
                 for (int j = 0; j < Encounter7s[i].Length; j++)
-                    BitConverter.GetBytes(Encounter7s[i][j].RawValue).CopyTo(Data, ofs + 4 * j);
+                    BitConverter.GetBytes(Encounter7s[i][j].RawValue).CopyTo(Data, ofs + (4 * j));
             }
 
             for (int i = 0; i < AdditionalSOS.Length; i++)
-                BitConverter.GetBytes(AdditionalSOS[i].RawValue).CopyTo(Data, 0x14C + 4 * i);
+                BitConverter.GetBytes(AdditionalSOS[i].RawValue).CopyTo(Data, 0x14C + (4 * i));
         }
 
         public string GetSummary(string[] speciesList)
@@ -95,7 +95,7 @@ namespace pk3DS
                 var tn = "Encounters";
                 if (i != 0)
                     tn = "SOS Slot " + i;
-                sb.Append($"{tn} (Levels {MinLevel}-{MaxLevel}): ");
+                sb.Append(tn).Append(" (Levels ").Append(MinLevel).Append('-').Append(MaxLevel).Append("): ");
                 sb.AppendLine(GetSlotSetSummary(speciesList, i));
             }
 
@@ -121,7 +121,7 @@ namespace pk3DS
                 }
                 specToRate[encounter.RawValue] += Rates[j];
             }
-            var list = distincts.OrderBy(e => specToRate[e.RawValue]).Reverse();
+            var list = distincts.OrderByDescending(e => specToRate[e.RawValue]);
             var summaries = list.Select(e => $"{e.GetSummary(speciesList)} ({specToRate[e.RawValue]}%)");
             return string.Join(", ", summaries);
         }

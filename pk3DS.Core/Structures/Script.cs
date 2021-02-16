@@ -23,12 +23,12 @@ namespace pk3DS.Core
         public int CompressedLength => Length - ScriptInstructionStart;
         public byte[] CompressedBytes => Raw.Skip(ScriptInstructionStart).ToArray();
         public int DecompressedLength => FinalOffset - ScriptInstructionStart;
-        public uint[] DecompressedInstructions => Scripts.quickDecompress(CompressedBytes, DecompressedLength/4);
+        public uint[] DecompressedInstructions => Scripts.QuickDecompress(CompressedBytes, DecompressedLength/4);
 
         public uint[] ScriptCommands => DecompressedInstructions.Take((ScriptMovementStart - ScriptInstructionStart) / 4).ToArray();
         public uint[] MoveCommands => DecompressedInstructions.Skip((ScriptMovementStart - ScriptInstructionStart) / 4).ToArray();
-        public string[] ParseScript => Scripts.parseScript(ScriptCommands);
-        public string[] ParseMoves => Scripts.parseMovement(MoveCommands);
+        public string[] ParseScript => Scripts.ParseScript(ScriptCommands);
+        public string[] ParseMoves => Scripts.ParseMovement(MoveCommands);
 
         public string Info => "Data Start: 0x" + ScriptInstructionStart.ToString("X4")
                               + Environment.NewLine + "Movement Offset: 0x" + ScriptMovementStart.ToString("X4")
@@ -40,14 +40,16 @@ namespace pk3DS.Core
                               ((DecompressedLength - CompressedLength)/(decimal)DecompressedLength).ToString("p1");
 
         public byte[] Raw;
+
         public Script(byte[] data = null)
         {
-            Raw = data ?? new byte[0];
+            Raw = data ?? Array.Empty<byte>();
 
             // sub_51AAFC
             if ((Raw[8] & 1) != 0)
                 throw new ArgumentException("Multi-environment script!?");
         }
+
         public byte[] Write()
         {
             return Raw;

@@ -24,7 +24,7 @@ namespace pk3DS
 
             // Gather Data
             for (int i = 0; i < powerData.Length; i++)
-                powerData[i] = exefsData.Skip(offset + 22 * i).Take(22).ToArray();
+                powerData[i] = exefsData.Skip(offset + (22 * i)).Take(22).ToArray();
 
             // Prepare View
             for (int i = 0; i < 10; i++) CB_SortOrder.Items.Add(i);
@@ -37,16 +37,18 @@ namespace pk3DS
         private readonly int offset;
         private readonly byte[] exefsData;
         private readonly byte[][] powerData = new byte[65][];
-        private readonly string[] powerFlavor = Main.Config.getText(TextName.OPowerFlavor);
+        private readonly string[] powerFlavor = Main.Config.GetText(TextName.OPowerFlavor);
 
         private int entry = -1;
-        private void changeEntry(object sender, EventArgs e)
+
+        private void ChangeEntry(object sender, EventArgs e)
         {
-            setEntry();
+            SetEntry();
             entry = CB_Item.SelectedIndex + 1;
-            getEntry();
+            GetEntry();
         }
-        private void getEntry()
+
+        private void GetEntry()
         {
             if (entry < 1) return;
 
@@ -86,7 +88,8 @@ namespace pk3DS
             NUD_Usability.Value = _01;
             NUD_2.Value = _02;
         }
-        private void setEntry()
+
+        private void SetEntry()
         {
             if (entry < 1) return;
 
@@ -102,8 +105,7 @@ namespace pk3DS
             powerData[entry][0x4] = otherCost;
             powerData[entry][0xE] = stage;
             powerData[entry][0xF] = lvlup;
-
-            Array.Copy(powerData[entry], 0x12, BitConverter.GetBytes(efficacy), 0, 2);
+            BitConverter.GetBytes(efficacy).CopyTo(powerData[entry], 0x12);
             powerData[entry][0x14] = duration; // sbyte FF = -1 (no duration?)
 
             byte usability = (byte)NUD_Usability.Value;
@@ -112,12 +114,12 @@ namespace pk3DS
                 powerData[entry][1] = usability;
         }
 
-        private void formClosing(object sender, FormClosingEventArgs e)
+        private void Form_Closing(object sender, FormClosingEventArgs e)
         {
-            setEntry();
+            SetEntry();
             // Copy data back to storage
             for (int i = 0; i < powerData.Length; i++)
-                Array.Copy(powerData[i], 0, exefsData, offset + i * powerData[i].Length, powerData[i].Length);
+                Array.Copy(powerData[i], 0, exefsData, offset + (i * powerData[i].Length), powerData[i].Length);
             if (ModifierKeys != Keys.Control)
                 File.WriteAllBytes(codebin, exefsData);
         }

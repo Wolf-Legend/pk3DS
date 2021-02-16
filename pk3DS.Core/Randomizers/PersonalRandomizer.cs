@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using pk3DS.Core.Structures;
 using pk3DS.Core.Structures.PersonalInfo;
 
 namespace pk3DS.Core.Randomizers
 {
     public class PersonalRandomizer : IRandomizer
     {
-        private readonly Random rnd = Util.rand;
+        private readonly Random rnd = Util.Rand;
 
         private const decimal LearnTMPercent = 35; // Average Learnable TMs is 35.260.
         private const decimal LearnTypeTutorPercent = 2; //136 special tutor moves learnable by species in Untouched ORAS.
@@ -41,6 +42,14 @@ namespace pk3DS.Core.Randomizers
         public bool ModifyEggGroup = true;
         public decimal SameEggGroupChance = 50;
 
+        //public bool Advanced { get; set; } = false;
+        public bool TMInheritance { get; set; }
+        public bool ModifyLearnsetSmartly { get; set; }
+
+        public ushort[] MoveIDsTMs { private get; set; }
+        public Move[] Moves => Game.Moves;
+        public EvolutionSet[] Evos => Game.Evolutions;
+
         public PersonalRandomizer(PersonalInfo[] table, GameConfig game)
         {
             Game = game;
@@ -56,15 +65,72 @@ namespace pk3DS.Core.Randomizers
 
         public void Execute()
         {
-            for (var i = 0; i < Table.Length; i++)
+            for (var i = 1; i < Table.Length; i++)
                 Randomize(Table[i], i);
+
+            if (TMInheritance)
+                PropagateTMs(Table, Evos);
+        }
+
+        private void PropagateTMs(PersonalInfo[] table, EvolutionSet[] evos)
+        {
+            int specCount = Game.MaxSpeciesID;
+            var HandledIndexes = new HashSet<int>();
+
+            for (int species = 1; species <= specCount; species++)
+            {
+                var entry = table[species];
+                PropagateDown(entry, species, 0);
+                for (int form = 0; form < entry.FormeCount; form++)
+                    PropagateDown(entry, species, form);
+            }
+
+            void PropagateDown(PersonalInfo pi, int species, int form)
+            {
+                int index = pi.FormeIndex(species, form);
+                if (index == species && form != 0)
+                    return;
+
+                if (index >= evos.Length)
+                    index = species;
+                PropagateDownIndex(pi, index);
+            }
+
+            void PropagateDownIndex(PersonalInfo pi, int index)
+            {
+                if (HandledIndexes.Contains(index))
+                    return;
+
+                var evoList = evos[index];
+                foreach (var evo in evoList.PossibleEvolutions.Where(z => z.Species != 0))
+                {
+                    var espec = evo.Species;
+                    var eform = evo.Form;
+                    var evoIndex = table[espec].FormeIndex(espec, eform);
+                    if (evoIndex >= table.Length)
+                        continue;
+
+                    if (!HandledIndexes.Contains(evoIndex))
+                        table[evoIndex].TMHM = pi.TMHM;
+                    else // pre-evolution encountered! take the higher evolution's TM's since they have been propagated up already...
+                        pi.TMHM = table[evoIndex].TMHM;
+
+                    HandledIndexes.Add(evoIndex);
+                    PropagateDownIndex(pi, evoIndex); // recurse for the rest of the evo chain
+                }
+            }
         }
 
         public void Randomize(PersonalInfo z, int index)
         {
             // Fiddle with Learnsets
             if (ModifyLearnsetTM || ModifyLearnsetHM)
-                RandomizeTMHM(z);
+            {
+                if (!ModifyLearnsetSmartly)
+                    RandomizeTMHMSimple(z);
+                else
+                    RandomizeTMHMAdvanced(z);
+            }
             if (ModifyLearnsetTypeTutors)
                 RandomizeTypeTutors(z, index);
             if (ModifyLearnsetMoveTutors)
@@ -85,20 +151,60 @@ namespace pk3DS.Core.Randomizers
                 z.CatchRate = rnd.Next(3, 251); // Random Catch Rate between 3 and 250.
         }
 
-        private void RandomizeTMHM(PersonalInfo z)
+        private void RandomizeTMHMAdvanced(PersonalInfo z)
+        {
+            var tms = z.TMHM;
+            //var types = z.Types;
+
+            bool CanLearn(Move _)
+            {
+                //var type = m.Type;
+                //bool typeMatch = types.Any(t => t == type);
+                // todo: how do I learn move?
+                return rnd.Next(0, 100) < LearnTMPercent;
+            }
+
+            if (ModifyLearnsetTM)
+            {
+                for (int j = 0; j < tmcount; j++)
+                {
+                    var moveID = MoveIDsTMs[j];
+                    var move = Moves[moveID];
+                    tms[j] = CanLearn(move);
+                }
+            }
+            if (ModifyLearnsetHM)
+            {
+                for (int j = tmcount; j < tms.Length; j++)
+                {
+                    var moveID = MoveIDsTMs[j];
+                    var move = Moves[moveID];
+                    tms[j] = CanLearn(move);
+                }
+            }
+
+            z.TMHM = tms;
+        }
+
+        private void RandomizeTMHMSimple(PersonalInfo z)
         {
             var tms = z.TMHM;
 
             if (ModifyLearnsetTM)
-            for (int j = 0; j < tmcount; j++)
-                tms[j] = rnd.Next(0, 100) < LearnTMPercent;
+            {
+                for (int j = 0; j < tmcount; j++)
+                    tms[j] = rnd.Next(0, 100) < LearnTMPercent;
+            }
 
             if (ModifyLearnsetHM)
-            for (int j = tmcount; j < tms.Length; j++)
-                tms[j] = rnd.Next(0, 100) < LearnTMPercent;
+            {
+                for (int j = tmcount; j < tms.Length; j++)
+                    tms[j] = rnd.Next(0, 100) < LearnTMPercent;
+            }
 
             z.TMHM = tms;
         }
+
         private void RandomizeTypeTutors(PersonalInfo z, int index)
         {
             var t = z.TypeTutors;
@@ -111,14 +217,19 @@ namespace pk3DS.Core.Randomizers
 
             z.TypeTutors = t;
         }
+
         private void RandomizeSpecialTutors(PersonalInfo z)
         {
             var tutors = z.SpecialTutors;
             foreach (bool[] tutor in tutors)
+            {
                 for (int i = 0; i < tutor.Length; i++)
                     tutor[i] = rnd.Next(0, 100) < LearnMoveTutorPercent;
+            }
+
             z.SpecialTutors = tutors;
         }
+
         private void RandomizeAbilities(PersonalInfo z)
         {
             var abils = z.Abilities;
@@ -126,6 +237,7 @@ namespace pk3DS.Core.Randomizers
                 abils[i] = GetRandomAbility();
             z.Abilities = abils;
         }
+
         private void RandomizeEggGroups(PersonalInfo z)
         {
             var egg = z.EggGroups;
@@ -133,6 +245,7 @@ namespace pk3DS.Core.Randomizers
             egg[1] = rnd.Next(0, 100) < SameEggGroupChance ? egg[0] : GetRandomEggGroup();
             z.EggGroups = egg;
         }
+
         private void RandomizeHeldItems(PersonalInfo z)
         {
             var item = z.Items;
@@ -140,6 +253,7 @@ namespace pk3DS.Core.Randomizers
                 item[j] = GetRandomHeldItem();
             z.Items = item;
         }
+
         private void RandomizeTypes(PersonalInfo z)
         {
             var t = z.Types;
@@ -147,6 +261,7 @@ namespace pk3DS.Core.Randomizers
             t[1] = rnd.Next(0, 100) < SameTypeChance ? t[0] : GetRandomType();
             z.Types = t;
         }
+
         private void RandomizeStats(PersonalInfo z)
         {
             // Fiddle with Base Stats, don't muck with Shedinja.
@@ -157,33 +272,35 @@ namespace pk3DS.Core.Randomizers
             {
                 if (!StatsToRandomize[i])
                     continue;
-                var l = Math.Min(255, (int) (stats[i] * (1 - StatDeviation / 100)));
-                var h = Math.Min(255, (int) (stats[i] * (1 + StatDeviation / 100)));
+                var l = Math.Min(255, (int) (stats[i] * (1 - (StatDeviation / 100))));
+                var h = Math.Min(255, (int) (stats[i] * (1 + (StatDeviation / 100))));
                 stats[i] = Math.Max(5, rnd.Next(l, h));
             }
             z.Stats = stats;
         }
+
         private void RandomShuffledStats(PersonalInfo z)
         {
             // Fiddle with Base Stats, don't muck with Shedinja.
             var stats = z.Stats;
             if (stats[0] == 1)
                 return;
-            for (int i = 0; i < stats.Length; i++)
-                Util.Shuffle(stats);
+
+            Util.Shuffle(stats);
             z.Stats = stats;
         }
 
         private int GetRandomType() => rnd.Next(0, TypeCount);
         private int GetRandomEggGroup() => rnd.Next(1, eggGroupCount);
         private int GetRandomHeldItem() => Game.Info.HeldItems[rnd.Next(1, Game.Info.HeldItems.Length)];
-        private readonly IList<int> BannedAbilities = new int[0];
+        private readonly IList<int> BannedAbilities = Array.Empty<int>();
+
         private int GetRandomAbility()
         {
             const int WonderGuard = 25;
             int newabil;
             do newabil = rnd.Next(1, Game.Info.MaxAbilityID + 1);
-            while (newabil == WonderGuard && !AllowWonderGuard || BannedAbilities.Contains(newabil));
+            while ((newabil == WonderGuard && !AllowWonderGuard) || BannedAbilities.Contains(newabil));
             return newabil;
         }
     }

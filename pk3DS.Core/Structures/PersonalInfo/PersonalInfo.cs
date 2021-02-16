@@ -54,16 +54,17 @@
 
         public bool[] TMHM { get; set; }
         public bool[] TypeTutors { get; set; }
-        public bool[][] SpecialTutors { get; set; } = new bool[0][];
+        public bool[][] SpecialTutors { get; set; } = System.Array.Empty<bool[]>();
 
-        protected static bool[] getBits(byte[] data)
+        protected static bool[] GetBits(byte[] data)
         {
             bool[] r = new bool[8 * data.Length];
             for (int i = 0; i < r.Length; i++)
                 r[i] = (data[i/8] >> (i&7) & 0x1) == 1;
             return r;
         }
-        protected static byte[] setBits(bool[] bits)
+
+        protected static byte[] SetBits(bool[] bits)
         {
             byte[] data = new byte[bits.Length/8];
             for (int i = 0; i < bits.Length; i++)
@@ -83,23 +84,21 @@
 
             return FormStatsIndex + forme - 1;
         }
+
         public int RandomGender
         {
             get
             {
-                switch (Gender)
+                return Gender switch
                 {
-                    case 255: // Genderless
-                        return 2;
-                    case 254: // Female
-                        return 1;
-                    case 0: // Male
-                        return 0;
-                    default:
-                        return (int)(Util.rnd32() % 2);
-                }
+                    255 => 2, // Genderless
+                    254 => 1, // Female
+                    0 => 0, // Male
+                    _ => (int)(Util.Random32() % 2),
+                };
             }
         }
+
         public bool HasFormes => FormeCount > 1;
         public int BST => HP + ATK + DEF + SPE + SPA + SPD;
     }

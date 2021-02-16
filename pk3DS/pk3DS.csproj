@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>pk3DS</RootNamespace>
     <AssemblyName>pk3DS</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -25,6 +26,8 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -36,6 +39,8 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -47,6 +52,8 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
@@ -58,6 +65,8 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -80,9 +89,12 @@
     <Compile Include="Subforms\Gen7\MartEditor7UU.Designer.cs">
       <DependentUpon>MartEditor7UU.cs</DependentUpon>
     </Compile>
-    <Compile Include="Subforms\Gen7\Wild\Area7.cs" />
-    <Compile Include="Subforms\Gen7\Wild\Encounter7.cs" />
-    <Compile Include="Subforms\Gen7\Wild\EncounterTable.cs" />
+    <Compile Include="Subforms\Gen7\TutorEditor7.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Subforms\Gen7\TutorEditor7.Designer.cs">
+      <DependentUpon>TutorEditor7.cs</DependentUpon>
+    </Compile>
     <Compile Include="Subforms\Gen7\Wild\Wild7Randomizer.cs" />
     <Compile Include="Tools\RandSettings.cs" />
     <Compile Include="WinFormsUtil.cs" />
@@ -454,6 +466,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Subforms\Gen7\TMEditor7.resx">
       <DependentUpon>TMEditor7.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Subforms\Gen7\TutorEditor7.resx">
+      <DependentUpon>TutorEditor7.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Subforms\Gen7\TypeChart7.resx">
       <DependentUpon>TypeChart7.cs</DependentUpon>

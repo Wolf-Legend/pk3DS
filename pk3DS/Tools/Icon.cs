@@ -10,6 +10,7 @@ namespace pk3DS
     public sealed partial class Icon : Form
     {
         private SMDH SMDH;
+
         public Icon()
         {
             InitializeComponent();
@@ -27,20 +28,23 @@ namespace pk3DS
             LoadSMDH();
 
             AllowDrop = true;
-            DragEnter += tabMain_DragEnter;
-            DragDrop += tabMain_DragDrop;
+            DragEnter += TC_Main_DragEnter;
+            DragDrop += TC_Main_DragDrop;
         }
-        private void tabMain_DragEnter(object sender, DragEventArgs e)
+
+        private void TC_Main_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
         }
-        private void tabMain_DragDrop(object sender, DragEventArgs e)
+
+        private void TC_Main_DragDrop(object sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             string path = files[0]; // open first D&D
 
-            openFile(path, true);
+            OpenFile(path, true);
         }
+
         private void LoadSMDH()
         {
             PB_Large.Image = SMDH.LargeIcon.Icon;
@@ -48,13 +52,14 @@ namespace pk3DS
             CB_AppInfo.SelectedIndex = 0;
             CB_AppInfo_SelectedIndexChanged(null, null);
         }
+
         private void SaveSMDH()
         {
             Main.SMDH = SMDH;
             File.WriteAllBytes(Path.Combine(Main.ExeFSPath, "icon.bin"), Main.SMDH.Write());
         }
 
-        private void openFile(string path, bool drop = false)
+        private void OpenFile(string path, bool drop = false)
         {
             FileInfo fi = new FileInfo(path);
             if (fi.Length > 1024 * 1024 * 5)
@@ -62,9 +67,10 @@ namespace pk3DS
 
             byte[] data = File.ReadAllBytes(path);
             if (data.Length == 0x36C0) // SMDH
-                importSMDH(data, true);
-            else importIcon(data, drop);
+                ImportSMDH(data, true);
+            else ImportIcon(data, drop);
         }
+
         private void B_Save_Click(object sender, EventArgs e)
         {
             CB_AppInfo_SelectedIndexChanged(null, null); // Force re-save
@@ -74,6 +80,7 @@ namespace pk3DS
                 Close();
             }
         }
+
         private void B_Cancel_Click(object sender, EventArgs e)
         {
             Close();
@@ -81,17 +88,20 @@ namespace pk3DS
 
         private void B_ExportSMDH_Click(object sender, EventArgs e)
         {
-            exportSMDH();
+            ExportSMDH();
         }
+
         private void B_ExportSmallIcon_Click(object sender, EventArgs e)
         {
-            exportIcon(false);
+            ExportIcon(false);
         }
+
         private void B_ExportLargeIcon_Click(object sender, EventArgs e)
         {
-            exportIcon(true);
+            ExportIcon(true);
         }
-        private void exportSMDH()
+
+        private void ExportSMDH()
         {
             var sfd = new SaveFileDialog
             {
@@ -102,23 +112,22 @@ namespace pk3DS
             CB_AppInfo_SelectedIndexChanged(null, null); // Force re-save
             File.WriteAllBytes(sfd.FileName, SMDH.Write());
         }
-        private void exportIcon(bool large)
+
+        private void ExportIcon(bool large)
         {
             var sfd = new SaveFileDialog
             {
                 FileName = large ? "Large Icon.png" : "Small Icon.png",
                 Filter = "Icon Image " + (large ? "48x48" : "24x24") + "|*.png"
             };
-            if (sfd.ShowDialog() != DialogResult.OK) 
+            if (sfd.ShowDialog() != DialogResult.OK)
                 return;
 
-            using (MemoryStream ms = new MemoryStream())
-            {
-                //error will throw from here
-                (large ? SMDH.LargeIcon.Icon : SMDH.SmallIcon.Icon).Save(ms, ImageFormat.Png);
-                byte[] data = ms.ToArray();
-                File.WriteAllBytes(sfd.FileName, data);
-            }
+            using MemoryStream ms = new MemoryStream();
+            //error will throw from here
+            (large ? SMDH.LargeIcon.Icon : SMDH.SmallIcon.Icon).Save(ms, ImageFormat.Png);
+            byte[] data = ms.ToArray();
+            File.WriteAllBytes(sfd.FileName, data);
         }
 
         private void B_ImportSMDH_Click(object sender, EventArgs e)
@@ -130,8 +139,9 @@ namespace pk3DS
             };
             if (ofd.ShowDialog() != DialogResult.OK) return;
 
-            openFile(ofd.FileName);
+            OpenFile(ofd.FileName);
         }
+
         private void B_ImportSmallIcon_Click(object sender, EventArgs e)
         {
             var ofd = new OpenFileDialog
@@ -141,8 +151,9 @@ namespace pk3DS
             };
             if (ofd.ShowDialog() != DialogResult.OK) return;
 
-            openFile(ofd.FileName);
+            OpenFile(ofd.FileName);
         }
+
         private void B_ImportLargeIcon_Click(object sender, EventArgs e)
         {
             var ofd = new OpenFileDialog
@@ -152,9 +163,10 @@ namespace pk3DS
             };
             if (ofd.ShowDialog() != DialogResult.OK) return;
 
-            openFile(ofd.FileName);
+            OpenFile(ofd.FileName);
         }
-        private void importSMDH(byte[] data, bool prompt = false)
+
+        private void ImportSMDH(byte[] data, bool prompt = false)
         {
             if (prompt && DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Replace SMDH?"))
                 return;
@@ -166,35 +178,33 @@ namespace pk3DS
             entry = -1; // allow proper refreshing
             LoadSMDH();
         }
-        private void importIcon(byte[] data, bool prompt = false)
+
+        private void ImportIcon(byte[] data, bool prompt = false)
         {
             try
             {
-                using (Stream BitmapStream = new MemoryStream(data)) // Open the file, even if it is in use.
-                {
-                    Image img = Image.FromStream(BitmapStream);
-                    Bitmap mBitmap = new Bitmap(img);
+                using Stream BitmapStream = new MemoryStream(data);
+                Image img = Image.FromStream(BitmapStream);
+                Bitmap mBitmap = new Bitmap(img);
 
-                    bool small = img.Width == 24 && img.Height == 24;
-                    bool large = img.Width == 48 && img.Height == 48;
+                bool small = img.Width == 24 && img.Height == 24;
+                bool large = img.Width == 48 && img.Height == 48;
 
-                    if (!small && !large)
-                        WinFormsUtil.Alert("Image size is not correct.",
-                            $"Width: {img.Width}\nHeight: {img.Height}",
-                            "Expected Dimensions (24x24 or 48x48)");
-                    if (prompt && DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Import image?", small ? "Small Icon" : "Large Icon"))
-                        return;
-                    if (small)
-                        SMDH.SmallIcon.ChangeIcon(mBitmap);
-                    if (large)
-                        SMDH.LargeIcon.ChangeIcon(mBitmap);
-                }
+                if (!small && !large)
+                    WinFormsUtil.Alert("Image size is not correct.", $"Width: {img.Width}\nHeight: {img.Height}", "Expected Dimensions (24x24 or 48x48)");
+                if (prompt && DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Import image?", small ? "Small Icon" : "Large Icon"))
+                    return;
+                if (small)
+                    SMDH.SmallIcon.ChangeIcon(mBitmap);
+                if (large)
+                    SMDH.LargeIcon.ChangeIcon(mBitmap);
             }
             catch
             { WinFormsUtil.Error("Invalid image format?"); }
         }
 
         private int entry = -1;
+
         private void CB_AppInfo_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (entry > -1)

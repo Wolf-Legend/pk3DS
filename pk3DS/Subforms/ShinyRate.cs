@@ -39,7 +39,7 @@ namespace pk3DS
             if (exefsData[offset] != 0x23) // already patched
             {
                 uint val = BitConverter.ToUInt16(exefsData, offset);
-                var instruction = InstructionList.FirstOrDefault(z => z.ArgVal == val);
+                var instruction = InstructionList.Find(z => z.ArgVal == val);
                 if (instruction == null)
                 {
                     WinFormsUtil.Alert(".code.bin was modified externally.", "Existing value not loaded.");
@@ -51,12 +51,12 @@ namespace pk3DS
                 }
                 modified = true;
             }
-            changeRerolls(null, null);
+            ChangeRerolls(null, null);
 
             CheckAlwaysShiny();
         }
 
-        private readonly List<Instruction> InstructionList = new List<Instruction>();
+        private readonly List<Instruction> InstructionList = new();
         private readonly bool modified;
         private readonly string codebin;
         private readonly int offset;
@@ -74,6 +74,7 @@ namespace pk3DS
                 Argument = arg;
                 ArgVal = BitConverter.ToUInt16(Argument, 0);
             }
+
             public byte[] Bytes
             {
                 get
@@ -86,6 +87,7 @@ namespace pk3DS
         }
 
         private int alwaysIndex;
+
         private void CheckAlwaysShiny()
         {
             byte[] pattern = {0x00, 0x20, 0x22, 0xE0, 0x02, 0x30, 0x21, 0xE2, 0x03, 0x20, 0x92, 0xE1, 0x1C, 0x00, 0x00};
@@ -110,22 +112,25 @@ namespace pk3DS
         }
 
         private void B_Cancel_Click(object sender, EventArgs e) => Close();
+
         private void B_Save_Click(object sender, EventArgs e)
         {
-            writeCodePatch();
+            WriteCodePatch();
             if (CHK_EverythingShiny.Enabled)
-                exefsData[alwaysIndex] = (byte)(CHK_EverythingShiny.Checked ? 0xEA : 0x0A);
+                exefsData[alwaysIndex] = CHK_EverythingShiny.Checked ? 0xEA : 0x0A;
             File.WriteAllBytes(codebin, exefsData);
             Close();
         }
-        private void changeRerolls(object sender, EventArgs e)
+
+        private void ChangeRerolls(object sender, EventArgs e)
         {
             int count = (int)NUD_Rerolls.Value;
             const int bc = 4096;
             var pct = 1 - Math.Pow((float)(bc - 1)/bc, count);
             L_Overall.Text = $"~{pct:P}";
         }
-        private void writeCodePatch()
+
+        private void WriteCodePatch()
         {
             // Overwrite the "load input argument value for reroll count" so that it loads a constant value.
             // 23 00 D4 E5 is then replaced with the instruction MOV R0, $value
@@ -135,13 +140,12 @@ namespace pk3DS
             if (rerolls > ushort.MaxValue)
                 rerolls = ushort.MaxValue;
             // lazy precomputed table for MOV0 up to 9000, lol
-            var instruction = InstructionList.FirstOrDefault(z => z.Value >= rerolls) ?? InstructionList.Last();
+            var instruction = InstructionList.Find(z => z.Value >= rerolls) ?? InstructionList.Last();
             byte[] data = instruction.Bytes;
             data.CopyTo(exefsData, offset);
 
             if (instruction.Value != rerolls)
-                WinFormsUtil.Alert("Specified reroll count increased to the next highest supported value.",
-                    $"{rerolls} -> {instruction.Value}");
+                WinFormsUtil.Alert("Specified reroll count increased to the next highest supported value.", $"{rerolls} -> {instruction.Value}");
         }
 
         private void B_RestoreOriginal_Click(object sender, EventArgs e)
@@ -153,12 +157,13 @@ namespace pk3DS
             }
             Close();
         }
-        private void changePercent(object sender, EventArgs e)
+
+        private void ChangePercent(object sender, EventArgs e)
         {
             var pct = NUD_Rate.Value;
             const int bc = 4096;
 
-            var inv = (int)Math.Log(1 - (float)pct/100, (float) (bc - 1)/bc);
+            var inv = (int)Math.Log(1 - ((float)pct/100), (float) (bc - 1)/bc);
             if (pct == 0)
                 pct = 0.00001m; // arbitrary nonzero
             L_RerollCount.Text = $"Count: {inv:0} = 1:{(int)(1/(pct/100))}";

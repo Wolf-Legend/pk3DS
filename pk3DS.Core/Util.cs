@@ -5,7 +5,7 @@ using System.Linq;
 namespace pk3DS.Core
 {
     public static class Util
-    { 
+    {
         // Strings and Paths
         public static FileInfo GetNewestFile(DirectoryInfo directory)
         {
@@ -14,15 +14,18 @@ namespace pk3DS.Core
                 .OrderByDescending(f => f?.LastWriteTime ?? DateTime.MinValue)
                 .FirstOrDefault();
         }
+
         public static string NormalizePath(string path)
         {
             return Path.GetFullPath(new Uri(path).LocalPath)
                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
+
         public static string CleanFileName(string fileName)
         {
             return Path.GetInvalidFileNameChars().Aggregate(fileName, (current, c) => current.Replace(c.ToString(), string.Empty));
         }
+
         public static string TrimFromZero(string input)
         {
             int index = input.IndexOf('\0');
@@ -33,9 +36,9 @@ namespace pk3DS.Core
         }
 
         // Randomization
-        public static Random rand { get; private set; } = new Random();
-        public static void ReseedRand(int seed) => rand = new Random(seed);
-        public static uint rnd32() => (uint)rand.Next(1 << 30) << 2 | (uint)rand.Next(1 << 2);
+        public static Random Rand { get; private set; } = new();
+        public static void ReseedRand(int seed) => Rand = new Random(seed);
+        public static uint Random32() => (uint)Rand.Next(1 << 30) << 2 | (uint)Rand.Next(1 << 2);
 
         // Data Retrieval
         public static int ToInt32(string value)
@@ -43,11 +46,12 @@ namespace pk3DS.Core
             string val = value?.Replace(" ", "").Replace("_", "").Trim();
             return string.IsNullOrWhiteSpace(val) ? 0 : int.Parse(val);
         }
+
         public static uint ToUInt32(string value)
         {
             string val = value?.Replace(" ", "").Replace("_", "").Trim();
             return string.IsNullOrWhiteSpace(val) ? 0 : uint.Parse(val);
-        }        
+        }
 
         // Data Manipulation
         public static void Shuffle<T>(T[] array)
@@ -55,12 +59,12 @@ namespace pk3DS.Core
             int n = array.Length;
             for (int i = 0; i < n; i++)
             {
-                int r = i + (int)(rand.NextDouble() * (n - i));
+                int r = i + (int)(Rand.NextDouble() * (n - i));
                 T t = array[r];
                 array[r] = array[i];
                 array[i] = t;
             }
-        }        
+        }
 
         // GARCTool Utility
         public static string GuessExtension(BinaryReader br, string defaultExt, bool bypass)
@@ -78,7 +82,7 @@ namespace pk3DS.Core
                     // check for 2char container extensions
                     try
                     {
-                        br.BaseStream.Position = position + 4 + 4 * count;
+                        br.BaseStream.Position = position + 4 + (4 * count);
                         if (br.ReadUInt32() == br.BaseStream.Length)
                         {
                             ext += (char)magic[0] + (char)magic[1];
@@ -92,7 +96,7 @@ namespace pk3DS.Core
                     try
                     {
                         count = BitConverter.ToUInt16(magic, 0);
-                        br.BaseStream.Position = position + 4 + 0x40 * count;
+                        br.BaseStream.Position = position + 4 + (0x40 * count);
                         uint tableval = br.ReadUInt32();
                         br.BaseStream.Position += 0x20 * tableval;
                         while (br.PeekChar() == 0) // seek forward
@@ -121,47 +125,32 @@ namespace pk3DS.Core
                             return defaultExt;
                         for (int i = 0; i < magic.Length && i < 4; i++)
                         {
-                            if (magic[i] >= 'a' && magic[i] <= 'z' || magic[i] >= 'A' && magic[i] <= 'Z'
+                            if ((magic[i] >= 'a' && magic[i] <= 'z') || (magic[i] >= 'A' && magic[i] <= 'Z')
                                 || char.IsDigit((char)magic[i]))
                             {
                                 ext += (char)magic[i];
                             }
                             else
+                            {
                                 break;
+                            }
                         }
                     }
                 }
-            end:
+                end:
                 {
                     // Return BaseStream position to the start.
                     br.BaseStream.Position = position;
-                    if (ext.Length <= 1)
-                        return defaultExt;
-                    return ext;
+                    return ext.Length <= 1 ? defaultExt : ext;
                 }
             }
             catch { return defaultExt; }
         }
+
         public static string GuessExtension(string path, bool bypass)
         {
-            using (BinaryReader br = new BinaryReader(File.OpenRead(path)))
-                return GuessExtension(br, "bin", bypass);
-        }
-        public static uint Reverse(uint x)
-        {
-            uint y = 0;
-            for (int i = 0; i < 32; ++i)
-            {
-                y <<= 1;
-                y |= x & 1;
-                x >>= 1;
-            }
-            return y;
-        }
-        public static char[] Reverse(char[] charArray)
-        {
-            Array.Reverse(charArray);
-            return charArray;
+            using BinaryReader br = new BinaryReader(File.OpenRead(path));
+            return GuessExtension(br, "bin", bypass);
         }
 
         // Find Code off of Reference
@@ -180,33 +169,24 @@ namespace pk3DS.Core
                     j = 0;
                 }
                 else if (++j == len)
+                {
                     return i;
+                }
             }
         }
 
         // Misc
-        public static string getHexString(byte[] data)
+        public static string GetHexString(byte[] data)
         {
             return BitConverter.ToString(data).Replace('-', ' ');
         }
-        public static void resizeJagged(ref byte[][] array, int size, int lowLen)
-        {
-            int oldSize = array?.Length ?? 0;
-            Array.Resize(ref array, size);
 
-            // Zero fill new data
-            for (int i = oldSize; i < size - oldSize; i++)
-            {
-                array[i] = new byte[lowLen];
-            }
-        }
         public static byte[] StringToByteArray(string hex)
         {
             return Enumerable.Range(0, hex.Length)
                              .Where(x => x % 2 == 0)
                              .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
                              .ToArray();
-        }        
-        
+        }
     }
 }

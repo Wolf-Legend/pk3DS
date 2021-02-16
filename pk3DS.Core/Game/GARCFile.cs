@@ -18,8 +18,8 @@ namespace pk3DS.Core
         }
 
         // Shorthand Alias
-        public byte[] getFile(int file, int subfile = 0) { return GARC.getFile(file, subfile); }
-        public byte[][] Files { get { return GARC.Files; } set { GARC.Files = value; } }
+        public byte[] GetFile(int file, int subfile = 0) { return GARC.GetFile(file, subfile); }
+        public byte[][] Files { get => GARC.Files; set => GARC.Files = value; }
         public int FileCount => GARC.FileCount;
 
         public void Save()
@@ -28,19 +28,20 @@ namespace pk3DS.Core
             Console.WriteLine($"Wrote {Reference.Name} to {Reference.Reference}");
         }
     }
-    public class lzGARCFile
+
+    public class LazyGARCFile
     {
-        private readonly GARC.lzGARC GARC;
+        private readonly GARC.LazyGARC GARC;
         private readonly GARCReference Reference;
         private readonly string Path;
 
-        public lzGARCFile(GARC.lzGARC g, GARCReference r, string p)
+        public LazyGARCFile(GARC.LazyGARC g, GARCReference r, string p)
         {
             GARC = g;
             Reference = r;
             Path = p;
         }
-        
+
         public int FileCount => GARC.FileCount;
 
         public byte[][] Files
@@ -61,9 +62,10 @@ namespace pk3DS.Core
 
         public byte[] this[int file]
         {
-            get { return GARC[file]; }
-            set { GARC[file] = value; }
+            get => GARC[file];
+            set => GARC[file] = value;
         }
+
         public void Save()
         {
             File.WriteAllBytes(Path, GARC.Save());

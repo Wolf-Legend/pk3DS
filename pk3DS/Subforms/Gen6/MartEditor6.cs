@@ -18,7 +18,7 @@ namespace pk3DS
             offset = GetDataOffset(data);
             codebin = files[0];
             itemlist[0] = "";
-            setupDGV();
+            SetupDGV();
             foreach (string s in locations) CB_Location.Items.Add(s);
             CB_Location.SelectedIndex = 0;
         }
@@ -48,7 +48,7 @@ namespace pk3DS
         }
 
         private readonly string codebin;
-        private readonly string[] itemlist = Main.Config.getText(TextName.ItemNames);
+        private readonly string[] itemlist = Main.Config.GetText(TextName.ItemNames);
         private readonly byte[] data;
 
         private readonly byte[] entries = Main.Config.ORAS
@@ -79,7 +79,7 @@ namespace pk3DS
         private readonly int offset;
         private int dataoffset;
 
-        readonly string[] locations = Main.Config.ORAS
+        private readonly string[] locations = Main.Config.ORAS
             ? new[] // ORAS
             {
                 "No Gym Badges [After Pokédex]", "1 Gym Badge", "2 Gym Badges", "3 Gym Badges", "4 Gym Badges", "5 Gym Badges", "6 Gym Badges", "7 Gym Badges", "8 Gym Badges",
@@ -104,13 +104,14 @@ namespace pk3DS
                 "Coumarine City [Poké Balls]"
             };
 
-        private void getDataOffset(int index)
+        private void GetDataOffset(int index)
         {
             dataoffset = offset; // reset
             for (int i = 0; i < index; i++)
                 dataoffset += 2 * entries[i];
         }
-        private void setupDGV()
+
+        private void SetupDGV()
         {
             DataGridViewColumn dgvIndex = new DataGridViewTextBoxColumn();
             {
@@ -134,47 +135,52 @@ namespace pk3DS
         }
 
         private int entry = -1;
-        private void changeIndex(object sender, EventArgs e)
+
+        private void ChangeIndex(object sender, EventArgs e)
         {
-            if (entry > -1) setList();
+            if (entry > -1) SetList();
             entry = CB_Location.SelectedIndex;
-            getList();
+            GetList();
         }
-        private void getList()
+
+        private void GetList()
         {
             dgv.Rows.Clear();
             int count = entries[entry];
             dgv.Rows.Add(count);
-            getDataOffset(entry);
+            GetDataOffset(entry);
             for (int i = 0; i < count; i++)
             {
                 dgv.Rows[i].Cells[0].Value = i.ToString();
-                dgv.Rows[i].Cells[1].Value = itemlist[BitConverter.ToUInt16(data, dataoffset + 2 * i)];
+                dgv.Rows[i].Cells[1].Value = itemlist[BitConverter.ToUInt16(data, dataoffset + (2 * i))];
             }
         }
-        private void setList()
+
+        private void SetList()
         {
             int count = dgv.Rows.Count;
             for (int i = 0; i < count; i++)
-                Array.Copy(BitConverter.GetBytes((ushort)Array.IndexOf(itemlist, dgv.Rows[i].Cells[1].Value)), 0, data, dataoffset + 2 * i, 2);
+                Array.Copy(BitConverter.GetBytes((ushort)Array.IndexOf(itemlist, dgv.Rows[i].Cells[1].Value)), 0, data, dataoffset + (2 * i), 2);
         }
 
         private void B_Save_Click(object sender, EventArgs e)
         {
-            if (entry > -1) setList();
+            if (entry > -1) SetList();
             File.WriteAllBytes(codebin, data);
             Close();
         }
+
         private void B_Cancel_Click(object sender, EventArgs e)
         {
             Close();
         }
+
         private void B_Randomize_Click(object sender, EventArgs e)
         {
             if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Randomize mart inventories?"))
                 return;
 
-            int[] validItems = Randomizer.getRandomItemList();
+            int[] validItems = Randomizer.GetRandomItemList();
 
             int ctr = 0;
             Util.Shuffle(validItems);
@@ -187,6 +193,8 @@ namespace pk3DS
                 for (int r = 0; r < dgv.Rows.Count; r++)
                 {
                     int currentItem = Array.IndexOf(itemlist, dgv.Rows[r].Cells[1].Value);
+                    if (CHK_XItems.Checked && MartEditor7.XItems.Contains(currentItem))
+                        continue;
                     if (MartEditor7.BannedItems.Contains(currentItem))
                         continue;
                     dgv.Rows[r].Cells[1].Value = itemlist[validItems[ctr++]];

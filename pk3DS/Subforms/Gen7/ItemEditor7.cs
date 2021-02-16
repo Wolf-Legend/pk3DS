@@ -20,37 +20,42 @@ namespace pk3DS
         }
 
         private readonly byte[][] files;
-        private readonly string[] itemlist = Main.Config.getText(TextName.ItemNames);
-        private readonly string[] itemflavor = Main.Config.getText(TextName.ItemFlavor);
+        private readonly string[] itemlist = Main.Config.GetText(TextName.ItemNames);
+        private readonly string[] itemflavor = Main.Config.GetText(TextName.ItemFlavor);
 
         private void Setup()
         {
             foreach (string s in itemlist) CB_Item.Items.Add(s);
             CB_Item.SelectedIndex = 1;
         }
+
         private int entry = -1;
-        private void changeEntry(object sender, EventArgs e)
+
+        private void ChangeEntry(object sender, EventArgs e)
         {
-            setEntry();
+            SetEntry();
             entry = CB_Item.SelectedIndex;
             L_Index.Text = $"Index: {entry:000}";
-            getEntry();
+            GetEntry();
         }
-        private void getEntry()
+
+        private void GetEntry()
         {
             if (entry < 1) return;
             Grid.SelectedObject = new Item(files[entry]);
 
             RTB.Text = itemflavor[entry].Replace("\\n", Environment.NewLine);
         }
-        private void setEntry()
+
+        private void SetEntry()
         {
             if (entry < 1) return;
             files[entry] = ((Item)Grid.SelectedObject).Write();
         }
-        private void formClosing(object sender, FormClosingEventArgs e)
+
+        private void Form_Closing(object sender, FormClosingEventArgs e)
         {
-            setEntry();
+            SetEntry();
         }
 
         private static readonly byte[] ItemIconTableSignature =
@@ -61,7 +66,7 @@ namespace pk3DS
             0x00, 0x01, 0x01, 0x00
         };
 
-        private static int getItemMapOffset()
+        public static int GetItemMapOffset()
         {
             if (Main.ExeFSPath == null) { WinFormsUtil.Alert("No exeFS code to load."); return -1; }
             string[] exefsFiles = Directory.GetFiles(Main.ExeFSPath);
@@ -70,8 +75,7 @@ namespace pk3DS
 
             byte[] reference = ItemIconTableSignature;
 
-            int ptr = Util.IndexOfBytes(data, reference, 0x400000, 0) - 2 + reference.Length;
-            return ptr;
+            return Util.IndexOfBytes(data, reference, 0x400000, 0) - 2 + reference.Length;
         }
 
         private void B_Table_Click(object sender, EventArgs e)

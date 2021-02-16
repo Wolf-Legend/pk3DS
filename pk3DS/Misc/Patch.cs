@@ -21,7 +21,7 @@ namespace pk3DS
                 RTB_GARCs.Lines = File.ReadAllLines("patch.txt", Encoding.Unicode);
         }
 
-        internal static bool patchExeFS(string path, string[] oldstr, string[] newstr, string oldROM, string newROM, ref string result, string outPath = null)
+        internal static bool PatchExeFS(string path, string[] oldstr, string[] newstr, string oldROM, string newROM, ref string result, string outPath = null)
         {
             int ctr = 0;
             if (oldstr.Length != newstr.Length)
@@ -62,7 +62,8 @@ namespace pk3DS
             File.WriteAllText(outPath ?? path, text, Encoding.Unicode);
             return true;
         }
-        internal static string exportGARCs(string[] garcPaths, string[] newPaths, string parentRomFS, string patchFolder)
+
+        internal static string ExportGARCs(string[] garcPaths, string[] newPaths, string parentRomFS, string patchFolder)
         {
             // Stuff files into new patch folder
             for (int i = 0; i < garcPaths.Length; i++)
@@ -79,11 +80,11 @@ namespace pk3DS
 
         private void B_PatchCIA_Click(object sender, EventArgs e)
         {
-            string patchFolder = $"{"Patch"} ({DateTime.Now.ToString("yy-MM-dd@HH-mm-ss")})";
+            string patchFolder = $"Patch ({DateTime.Now:yy-MM-dd@HH-mm-ss})";
             try
             {
-                string[] garcs = getGARCs();
-                string[] garcPaths = getPaths(garcs);
+                string[] garcs = GetGARCs();
+                string[] garcPaths = GetPaths(garcs);
 
                 const string oldROM = "rom:";
                 const string newROM = "rom2:";
@@ -101,10 +102,10 @@ namespace pk3DS
                 string result = "";
                 string ExeFS = Directory.GetFiles(Main.ExeFSPath)[0];
                 if (!File.Exists(ExeFS) || !Path.GetFileNameWithoutExtension(ExeFS).Contains("code")) { throw new Exception("No .code.bin detected."); }
-                if (!patchExeFS(ExeFS, garcPaths, newPaths, oldROM, newROM, ref result, Path.Combine(patchFolder, ".code.bin")))
+                if (!PatchExeFS(ExeFS, garcPaths, newPaths, oldROM, newROM, ref result, Path.Combine(patchFolder, ".code.bin")))
                     throw new Exception(result);
 
-                WinFormsUtil.Alert("Patch contents saved to:" + Environment.NewLine + exportGARCs(garcPaths, newPaths, Main.RomFSPath, patchFolder), result);
+                WinFormsUtil.Alert("Patch contents saved to:" + Environment.NewLine + ExportGARCs(garcPaths, newPaths, Main.RomFSPath, patchFolder), result);
             }
             catch (Exception ex)
             {
@@ -113,7 +114,7 @@ namespace pk3DS
             }
         }
 
-        private string[] getGARCs()
+        private string[] GetGARCs()
         {
             StringCollection sc = new StringCollection();
             foreach (int indexChecked in CHKLB_GARCs.CheckedIndices)
@@ -127,16 +128,23 @@ namespace pk3DS
             sc.CopyTo(garcs, 0);
             return garcs.Distinct().ToArray();
         }
-        private string[] getPaths(string[] sc)
+
+        private string[] GetPaths(string[] sc)
         {
             bool languages = CHK_Lang.Checked;
             StringCollection paths = new StringCollection();
             foreach (string s in sc)
-                if (!languages || s != "gametext" && s != "storytext")
-                    paths.Add(Main.getGARCFileName(s, Main.Language));
+            {
+                if (!languages || (s != "gametext" && s != "storytext"))
+                {
+                    paths.Add(Main.GetGARCFileName(s, Main.Language));
+                }
                 else
+                {
                     for (int l = 0; l < 8; l++)
-                        paths.Add(Main.getGARCFileName(s, l));
+                        paths.Add(Main.GetGARCFileName(s, l));
+                }
+            }
 
             string[] garcs = new string[paths.Count];
             paths.CopyTo(garcs, 0);
@@ -148,16 +156,19 @@ namespace pk3DS
             for (int i = 0; i < CHKLB_GARCs.Items.Count; i++)
                 CHKLB_GARCs.SetItemChecked(i, true);
         }
+
         private void B_CheckNone_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < CHKLB_GARCs.Items.Count; i++)
                 CHKLB_GARCs.SetItemChecked(i, false);
         }
 
-        private void savePatch(object sender, FormClosingEventArgs e)
+        private void SavePatch(object sender, FormClosingEventArgs e)
         {
             if (RTB_GARCs.Text.Length > 0)
+            {
                 try { File.WriteAllLines("patch.ini", RTB_GARCs.Lines, Encoding.Unicode); } catch {}
+            }
         }
     }
 }

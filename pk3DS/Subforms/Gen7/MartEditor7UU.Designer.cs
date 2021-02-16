@@ -30,7 +30,6 @@
         {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.CB_Location = new System.Windows.Forms.ComboBox();
             this.dgv = new System.Windows.Forms.DataGridView();
             this.dgvIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -45,23 +44,15 @@
             this.dgvIndexBP = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dgvItemBP = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.dgvPriceBP = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dgvmv = new System.Windows.Forms.DataGridView();
-            this.dgvmvIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dgvmvMove = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.dgvmvBP = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.label2 = new System.Windows.Forms.Label();
-            this.CB_LocationBPMove = new System.Windows.Forms.ComboBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.CHK_XItems = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dgv)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvbp)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvmv)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
-            this.tabPage3.SuspendLayout();
             this.SuspendLayout();
             // 
             // CB_Location
@@ -74,7 +65,7 @@
             this.CB_Location.Name = "CB_Location";
             this.CB_Location.Size = new System.Drawing.Size(254, 21);
             this.CB_Location.TabIndex = 0;
-            this.CB_Location.SelectedIndexChanged += new System.EventHandler(this.changeIndexItem);
+            this.CB_Location.SelectedIndexChanged += new System.EventHandler(this.ChangeIndexItem);
             // 
             // dgv
             // 
@@ -91,7 +82,7 @@
             this.dgvItem});
             this.dgv.Location = new System.Drawing.Point(0, 27);
             this.dgv.Name = "dgv";
-            this.dgv.Size = new System.Drawing.Size(317, 241);
+            this.dgv.Size = new System.Drawing.Size(317, 265);
             this.dgv.TabIndex = 1;
             // 
             // dgvIndex
@@ -122,7 +113,7 @@
             // B_Randomize
             // 
             this.B_Randomize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.B_Randomize.Location = new System.Drawing.Point(12, 315);
+            this.B_Randomize.Location = new System.Drawing.Point(12, 336);
             this.B_Randomize.Name = "B_Randomize";
             this.B_Randomize.Size = new System.Drawing.Size(87, 23);
             this.B_Randomize.TabIndex = 3;
@@ -133,7 +124,7 @@
             // B_Save
             // 
             this.B_Save.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.B_Save.Location = new System.Drawing.Point(265, 315);
+            this.B_Save.Location = new System.Drawing.Point(265, 336);
             this.B_Save.Name = "B_Save";
             this.B_Save.Size = new System.Drawing.Size(68, 23);
             this.B_Save.TabIndex = 4;
@@ -144,7 +135,7 @@
             // B_Cancel
             // 
             this.B_Cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.B_Cancel.Location = new System.Drawing.Point(191, 315);
+            this.B_Cancel.Location = new System.Drawing.Point(191, 336);
             this.B_Cancel.Name = "B_Cancel";
             this.B_Cancel.Size = new System.Drawing.Size(68, 23);
             this.B_Cancel.TabIndex = 5;
@@ -171,7 +162,7 @@
             this.CB_LocationBPItem.Name = "CB_LocationBPItem";
             this.CB_LocationBPItem.Size = new System.Drawing.Size(254, 21);
             this.CB_LocationBPItem.TabIndex = 6;
-            this.CB_LocationBPItem.SelectedIndexChanged += new System.EventHandler(this.changeIndexBPItem);
+            this.CB_LocationBPItem.SelectedIndexChanged += new System.EventHandler(this.ChangeIndexBPItem);
             // 
             // dgvbp
             // 
@@ -216,70 +207,6 @@
             this.dgvPriceBP.Name = "dgvPriceBP";
             this.dgvPriceBP.Width = 65;
             // 
-            // dgvmv
-            // 
-            this.dgvmv.AllowUserToAddRows = false;
-            this.dgvmv.AllowUserToDeleteRows = false;
-            this.dgvmv.AllowUserToResizeColumns = false;
-            this.dgvmv.AllowUserToResizeRows = false;
-            this.dgvmv.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.dgvmv.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvmv.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dgvmvIndex,
-            this.dgvmvMove,
-            this.dgvmvBP});
-            this.dgvmv.Location = new System.Drawing.Point(0, 27);
-            this.dgvmv.Name = "dgvmv";
-            this.dgvmv.Size = new System.Drawing.Size(317, 241);
-            this.dgvmv.TabIndex = 14;
-            // 
-            // dgvmvIndex
-            // 
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.dgvmvIndex.DefaultCellStyle = dataGridViewCellStyle3;
-            this.dgvmvIndex.HeaderText = "Index";
-            this.dgvmvIndex.MaxInputLength = 3;
-            this.dgvmvIndex.Name = "dgvmvIndex";
-            this.dgvmvIndex.ReadOnly = true;
-            this.dgvmvIndex.Width = 45;
-            // 
-            // dgvmvMove
-            // 
-            this.dgvmvMove.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.dgvmvMove.HeaderText = "Move";
-            this.dgvmvMove.Name = "dgvmvMove";
-            this.dgvmvMove.Width = 135;
-            // 
-            // dgvmvBP
-            // 
-            this.dgvmvBP.HeaderText = "Price";
-            this.dgvmvBP.MaxInputLength = 3;
-            this.dgvmvBP.Name = "dgvmvBP";
-            this.dgvmvBP.Width = 65;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 6);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(51, 13);
-            this.label2.TabIndex = 12;
-            this.label2.Text = "Location:";
-            // 
-            // CB_LocationBPMove
-            // 
-            this.CB_LocationBPMove.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CB_LocationBPMove.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CB_LocationBPMove.FormattingEnabled = true;
-            this.CB_LocationBPMove.Location = new System.Drawing.Point(60, 3);
-            this.CB_LocationBPMove.Name = "CB_LocationBPMove";
-            this.CB_LocationBPMove.Size = new System.Drawing.Size(254, 21);
-            this.CB_LocationBPMove.TabIndex = 11;
-            this.CB_LocationBPMove.SelectedIndexChanged += new System.EventHandler(this.changeIndexBPMove);
-            // 
             // tabControl1
             // 
             this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -287,11 +214,10 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(325, 294);
+            this.tabControl1.Size = new System.Drawing.Size(325, 318);
             this.tabControl1.TabIndex = 15;
             // 
             // tabPage1
@@ -302,9 +228,9 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(317, 268);
+            this.tabPage1.Size = new System.Drawing.Size(317, 292);
             this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Mart";
+            this.tabPage1.Text = "Poké Mart";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // tabPage2
@@ -320,24 +246,24 @@
             this.tabPage2.Text = "BP Items";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // tabPage3
+            // CHK_XItems
             // 
-            this.tabPage3.Controls.Add(this.dgvmv);
-            this.tabPage3.Controls.Add(this.label2);
-            this.tabPage3.Controls.Add(this.CB_LocationBPMove);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(317, 268);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Tutors";
-            this.tabPage3.UseVisualStyleBackColor = true;
+            this.CHK_XItems.AutoSize = true;
+            this.CHK_XItems.Checked = true;
+            this.CHK_XItems.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.CHK_XItems.Location = new System.Drawing.Point(13, 364);
+            this.CHK_XItems.Name = "CHK_XItems";
+            this.CHK_XItems.Size = new System.Drawing.Size(200, 17);
+            this.CHK_XItems.TabIndex = 304;
+            this.CHK_XItems.Text = "Don\'t Randomize X Items (Speedrun)";
+            this.CHK_XItems.UseVisualStyleBackColor = true;
             // 
             // MartEditor7UU
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(344, 350);
+            this.ClientSize = new System.Drawing.Size(344, 387);
+            this.Controls.Add(this.CHK_XItems);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.B_Cancel);
             this.Controls.Add(this.B_Save);
@@ -349,15 +275,13 @@
             this.Text = "Mart Editor";
             ((System.ComponentModel.ISupportInitialize)(this.dgv)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvbp)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvmv)).EndInit();
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
-            this.tabPage3.ResumeLayout(false);
-            this.tabPage3.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -377,15 +301,9 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dgvIndexBP;
         private System.Windows.Forms.DataGridViewComboBoxColumn dgvItemBP;
         private System.Windows.Forms.DataGridViewTextBoxColumn dgvPriceBP;
-        private System.Windows.Forms.DataGridView dgvmv;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox CB_LocationBPMove;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.TabPage tabPage3;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dgvmvIndex;
-        private System.Windows.Forms.DataGridViewComboBoxColumn dgvmvMove;
-        private System.Windows.Forms.DataGridViewTextBoxColumn dgvmvBP;
+        private System.Windows.Forms.CheckBox CHK_XItems;
     }
 }

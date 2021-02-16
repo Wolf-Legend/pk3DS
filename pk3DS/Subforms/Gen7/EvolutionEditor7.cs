@@ -21,11 +21,11 @@ namespace pk3DS
 
             specieslist[0] = movelist[0] = itemlist[0] = "";
             Array.Resize(ref specieslist, Main.Config.MaxSpeciesID + 1);
-            string[][] AltForms = Main.Config.Personal.getFormList(specieslist, Main.Config.MaxSpeciesID);
-            specieslist = Main.Config.Personal.getPersonalEntryList(AltForms, specieslist, Main.Config.MaxSpeciesID, out baseForms, out formVal);
+            string[][] AltForms = Main.Config.Personal.GetFormList(specieslist, Main.Config.MaxSpeciesID);
+            specieslist = Main.Config.Personal.GetPersonalEntryList(AltForms, specieslist, Main.Config.MaxSpeciesID, out baseForms, out formVal);
 
             string[] evolutionMethods =
-            { 
+            {
                 "",
                 "Level Up with Friendship",
                 "Level Up at Morning with Friendship",
@@ -95,20 +95,22 @@ namespace pk3DS
             CB_Species.SelectedIndex = 1;
             RandSettings.GetFormSettings(this, GB_Randomizer.Controls);
         }
+
         private readonly byte[][] files;
         private readonly ComboBox[] pb, mb, rb;
         private readonly NumericUpDown[] fb, lb;
         private readonly PictureBox[] pic;
         private int entry = -1;
-        private readonly string[] specieslist = Main.Config.getText(TextName.SpeciesNames);
-        private readonly string[] movelist = Main.Config.getText(TextName.MoveNames);
-        private readonly string[] itemlist = Main.Config.getText(TextName.ItemNames);
-        private readonly string[] typelist = Main.Config.getText(TextName.Types);
+        private readonly string[] specieslist = Main.Config.GetText(TextName.SpeciesNames);
+        private readonly string[] movelist = Main.Config.GetText(TextName.MoveNames);
+        private readonly string[] itemlist = Main.Config.GetText(TextName.ItemNames);
+        private readonly string[] typelist = Main.Config.GetText(TextName.Types);
         private bool dumping, loading;
         private readonly int[] baseForms, formVal;
         private EvolutionSet evo = new EvolutionSet7(new byte[EvolutionSet7.SIZE]);
         private readonly int maxEvoMethod;
-        private void getList()
+
+        private void GetList()
         {
             entry = Array.IndexOf(specieslist, CB_Species.Text);
             byte[] input = files[entry];
@@ -127,10 +129,11 @@ namespace pk3DS
                 pb[i].SelectedIndex = evo.PossibleEvolutions[i].Argument;
                 rb[i].SelectedIndex = evo.PossibleEvolutions[i].Species; // Triggers sprite to reload
                 loading = false;
-                changeInto(rb[i], null); // refresh sprite
+                ChangeInto(rb[i], null); // refresh sprite
             }
         }
-        private void setList()
+
+        private void SetList()
         {
             if (entry < 1 || dumping) return;
 
@@ -145,10 +148,10 @@ namespace pk3DS
             files[entry] = evo.Write();
         }
 
-        private void changeEntry(object sender, EventArgs e)
+        private void ChangeEntry(object sender, EventArgs e)
         {
-            setList();
-            getList();
+            SetList();
+            GetList();
         }
 
         private void B_RandAll_Click(object sender, EventArgs e)
@@ -156,35 +159,60 @@ namespace pk3DS
             if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Randomize all resulting species?", "Evolution methods and parameters will stay the same."))
                 return;
 
-            setList();
+            SetList();
             // Set up advanced randomization options
             var evos = files.Select(z => new EvolutionSet7(z)).ToArray();
             var evoRand = new EvolutionRandomizer(Main.Config, evos);
             evoRand.Randomizer.rBST = CHK_BST.Checked;
             evoRand.Randomizer.rEXP = CHK_Exp.Checked;
             evoRand.Randomizer.rType = CHK_Type.Checked;
+            evoRand.Randomizer.L = CHK_L.Checked;
+            evoRand.Randomizer.E = CHK_E.Checked;
             evoRand.Randomizer.Initialize();
             evoRand.Execute();
             evos.Select(z => z.Write()).ToArray().CopyTo(files, 0);
-            getList();
+            GetList();
 
             WinFormsUtil.Alert("All Pokémon's Evolutions have been randomized!");
         }
+
         private void B_Trade_Click(object sender, EventArgs e)
         {
             if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Remove all trade evolutions?", "Evolution methods will be altered so that evolutions will be possible with only one game."))
                 return;
 
-            setList();
+            SetList();
             var evos = files.Select(z => new EvolutionSet7(z)).ToArray();
             var evoRand = new EvolutionRandomizer(Main.Config, evos);
             evoRand.Randomizer.Initialize();
             evoRand.ExecuteTrade();
             evos.Select(z => z.Write()).ToArray().CopyTo(files, 0);
-            getList();
+            GetList();
 
             WinFormsUtil.Alert("All trade evolutions have been removed!", "Trade evolutions will now occur after reaching a certain Level, or after leveling up while holding its appropriate trade item.");
         }
+
+        private void B_EveryLevel_Click(object sender, EventArgs e)
+        {
+            if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Modify evolutions?", "This will make it to where your Pokémon will evolve into something random every time it levels up."))
+                return;
+
+            SetList();
+            var evos = files.Select(z => new EvolutionSet7(z)).ToArray();
+            var evoRand = new EvolutionRandomizer(Main.Config, evos);
+            evoRand.Randomizer.rBST = CHK_BST.Checked;
+            evoRand.Randomizer.rEXP = CHK_Exp.Checked;
+            evoRand.Randomizer.rType = CHK_Type.Checked;
+            evoRand.Randomizer.L = CHK_L.Checked;
+            evoRand.Randomizer.E = CHK_E.Checked;
+            evoRand.Randomizer.Initialize();
+            evoRand.ExecuteEvolveEveryLevel();
+            evoRand.Execute(); // randomize right after
+            evos.Select(z => z.Write()).ToArray().CopyTo(files, 0);
+            GetList();
+            SystemSounds.Asterisk.Play();
+        }
+
         private void B_Dump_Click(object sender, EventArgs e)
         {
             if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Dump all Evolutions to Text File?"))
@@ -229,17 +257,17 @@ namespace pk3DS
             dumping = false;
         }
 
-        private void formClosing(object sender, FormClosingEventArgs e)
+        private void Form_Closing(object sender, FormClosingEventArgs e)
         {
-            setList();
+            SetList();
             RandSettings.SetFormSettings(this, GB_Randomizer.Controls);
         }
 
-        private void changeMethod(object sender, EventArgs e)
+        private void ChangeMethod(object sender, EventArgs e)
         {
             int op = Array.IndexOf(mb, sender as ComboBox);
             ushort[] methodCase =
-            { 
+            {
                 0,0,0,0,1,0,2,0,2,1,1,1,1,1,1,1,5,2,2,2,2,3,4,1,1,0,0,0, // 27, Past Methods
                 // New Methods
                 1, // 28 - Dark Type Party
@@ -272,7 +300,7 @@ namespace pk3DS
                 case 3: // Moves
                     { foreach (string t in movelist) pb[op].Items.Add(t); break; }
                 case 4: // Species
-                    { for (int i = 0; i < specieslist.Length; i++) pb[op].Items.Add(specieslist[i]); break; }
+                    { foreach (var t in specieslist) pb[op].Items.Add(t); break; }
                 case 5: // 0-255 (Beauty)
                     { for (int i = 0; i <= 255; i++) pb[op].Items.Add(i.ToString()); break; }
                 case 6:
@@ -282,7 +310,8 @@ namespace pk3DS
             }
             pb[op].SelectedIndex = 0;
         }
-        private void changeInto(object sender, EventArgs e)
+
+        private void ChangeInto(object sender, EventArgs e)
         {
             if (loading || dumping)
                 return;
@@ -291,8 +320,8 @@ namespace pk3DS
             int form = (int)fb[index].Value;
             if (form == -1)
                 form = baseForms[species];
-            
-            pic[index].Image = WinFormsUtil.getSprite(species, form, 0, 0, Main.Config);
+
+            pic[index].Image = WinFormsUtil.GetSprite(species, form, 0, 0, Main.Config);
         }
     }
 }

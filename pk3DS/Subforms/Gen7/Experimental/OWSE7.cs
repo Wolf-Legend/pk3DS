@@ -10,31 +10,32 @@ namespace pk3DS
 {
     public partial class OWSE7 : Form
     {
-        private readonly lzGARCFile EncounterData;
-        private readonly lzGARCFile WorldData;
-        private readonly lzGARCFile ZoneData;
-        public OWSE7(lzGARCFile ed, lzGARCFile zd, lzGARCFile wd)
+        private readonly LazyGARCFile EncounterData;
+        //private readonly LazyGARCFile WorldData;
+        // private readonly LazyGARCFile ZoneData;
+
+        public OWSE7(LazyGARCFile ed, LazyGARCFile zd)
         {
             EncounterData = ed;
-            ZoneData = zd;
-            WorldData = wd;
+            var ZoneData = zd;
+            //WorldData = wd;
 
-            locationList = Main.Config.getText(TextName.metlist_000000);
+            locationList = Main.Config.GetText(TextName.metlist_000000);
             locationList = SMWE.GetGoodLocationList(locationList);
 
             InitializeComponent();
 
             var zdFiles = ZoneData.Files;
             zoneData = zdFiles[0];
-            worldData = zdFiles[1];
-            loadData();
+            //worldData = zdFiles[1];
+            LoadData();
         }
 
         private readonly byte[] zoneData;
-        private byte[] worldData;
+        //private readonly byte[] worldData;
         private readonly string[] locationList;
-        
-        private void loadData()
+
+        private void LoadData()
         {
             // get zonedata array
             var zd = ZoneData7.GetArray(zoneData);
@@ -46,23 +47,26 @@ namespace pk3DS
 
         private void CB_LocationID_SelectedIndexChanged(object sender, EventArgs e)
         {
-            setEntry();
+            SetEntry();
             entry = CB_LocationID.SelectedIndex;
-            getEntry();
+            GetEntry();
         }
 
         private int entry = -1;
-        private void setEntry()
+
+        private void SetEntry()
         {
             if (entry < 0)
                 return;
 
+            Console.WriteLine($"Setting {CB_LocationID.Text}");
             // research only, no set
         }
 
-        private bool loading = false;
+        private bool loading;
         private World Map;
-        private void getEntry()
+
+        private void GetEntry()
         {
             Console.WriteLine($"Loading {CB_LocationID.Text}");
             int index = entry*11;
@@ -102,22 +106,22 @@ namespace pk3DS
 
         private class World
         {
-            private byte[][] _7;
-            private byte[][] _8;
+            private readonly byte[][] _7;
+            private readonly byte[][] _8;
 
             private bool HasZS => _7 != null;
             private bool HasZI => _8 != null;
-            public Script[] ZoneScripts; 
-            public Script[] ZoneInfoScripts;
+            public readonly Script[] ZoneScripts;
+            public readonly Script[] ZoneInfoScripts;
 
-            public World(lzGARCFile garc, int worldID)
+            public World(LazyGARCFile garc, int worldID)
             {
                 int index = worldID*11;
-                _7 = mini.unpackMini(garc[index + 7], "ZS");
-                _8 = mini.unpackMini(garc[index + 8], "ZI");
+                _7 = Mini.UnpackMini(garc[index + 7], "ZS");
+                _8 = Mini.UnpackMini(garc[index + 8], "ZI");
 
-                ZoneScripts = HasZS ? _7.Select(arr => new Script(arr)).ToArray() : new Script[0];
-                ZoneInfoScripts = HasZI ? _8.Select(arr => new Script(arr)).ToArray() : new Script[0];
+                ZoneScripts = HasZS ? _7.Select(arr => new Script(arr)).ToArray() : Array.Empty<Script>();
+                ZoneInfoScripts = HasZI ? _8.Select(arr => new Script(arr)).ToArray() : Array.Empty<Script>();
             }
         }
 
@@ -133,8 +137,8 @@ namespace pk3DS
 
             var script = Map.ZoneScripts[(int)NUD_7_Count.Value - 1];
             L_7_Count.Text = $"Files: {Map.ZoneScripts.Length}";
-            RTB_7_Raw.Lines = Scripts.getHexLines(script.Raw, 16);
-            RTB_7_Script.Lines = Scripts.getHexLines(script.DecompressedInstructions);
+            RTB_7_Raw.Lines = Scripts.GetHexLines(script.Raw, 16);
+            RTB_7_Script.Lines = Scripts.GetHexLines(script.DecompressedInstructions);
             RTB_7_Parse.Lines = script.ParseScript;
 
             string[] lines =
@@ -144,6 +148,7 @@ namespace pk3DS
             };
             L_7_Info.Text = string.Join(Environment.NewLine, lines);
         }
+
         private void NUD_8_Count_ValueChanged(object sender, EventArgs e)
         {
             if (loading)
@@ -156,8 +161,8 @@ namespace pk3DS
 
             var script = Map.ZoneInfoScripts[(int)NUD_8_Count.Value - 1];
             L_8_Count.Text = $"Files: {Map.ZoneInfoScripts.Length}";
-            RTB_8_Raw.Lines = Scripts.getHexLines(script.Raw, 16);
-            RTB_8_Script.Lines = Scripts.getHexLines(script.DecompressedInstructions);
+            RTB_8_Raw.Lines = Scripts.GetHexLines(script.Raw, 16);
+            RTB_8_Script.Lines = Scripts.GetHexLines(script.DecompressedInstructions);
             RTB_8_Parse.Lines = script.ParseScript;
 
             string[] lines =
